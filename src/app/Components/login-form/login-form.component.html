@@ -1,0 +1,23 @@
+<div class="container-fuild d-flex justify-content-center align-items-center vh-100 " style="background-color: rgba(152, 190, 15, 0.151);">
+    <div class="shadow-lg rounded-3 px-4 py-4 border col-md-6 col-lg-5  " style="background-color: azure;">
+        <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" method="POST">
+            <!-- Input for Email or Username -->
+            <div class="mb-3">
+                <label for="loginInput" class="form-label">Email or Username</label>
+                <input type="text" class="form-control" id="loginInput" name="name" 
+                       placeholder="Enter your email or username" required ngModel (ngModelChange)="checkLoginType()">
+            </div>
+
+            <!-- Password Input -->
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Password</label>
+                <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Enter your password" required ngModel>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.valid">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
