@@ -31,6 +31,11 @@ export class AuthenticationService {
     return this.token || localStorage.getItem('authToken');
   }
 
+ 
+validateToken(): Observable<boolean> {
+    return this.http.get<boolean>('http://localhost:8081/api/auth/validate');  // Assuming the API returns a boolean
+  }
+  
   login(loginRequest: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(this.apiUrl, loginRequest);
   }

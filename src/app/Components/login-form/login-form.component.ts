@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AuthenticationService } from '../../Services/authentication.service';
 import { first } from 'rxjs';
@@ -11,8 +11,10 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class LoginFormComponent {
   loginType: string = '';  // Empty by default, will hold either 'email' or 'username'
- 
+  errorMessage: string = '';  // For displaying error messages
+
   constructor(private authService: AuthenticationService,private router:Router) {}
+  
   checkLoginType() {
     const loginInput = (document.getElementById('loginInput') as HTMLInputElement).value;
     // Check if the input contains '@' to determine if it's an email
@@ -33,11 +35,15 @@ export class LoginFormComponent {
       .subscribe({
         next: (response) => {
           console.log('Login successful', response);
-          localStorage.removeItem('authToken');
           this.authService.setAuthToken(response.token);
-          this.router.navigate(['/profile']);
+          const redirectUrl = localStorage.getItem('redirectUrl') || '/profile';
+          localStorage.removeItem('redirectUrl');
+          console.log(redirectUrl);
+          console.log(localStorage.getItem('redirectUrl'))
+          this.router.navigate([redirectUrl]);
         },
         error: (error) => {
+          this.errorMessage = 'Invalid credentials. Please try again.';  // Show error message
           console.error('Login failed', error);
         }
       });
