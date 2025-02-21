@@ -1,9 +1,10 @@
-<div class="app-container" [class.blur-background]="showLoginForm">
+<div class="app-container">
   
   <div *ngIf="!isAuthenticated">
-    <app-login-form (loginSuccess)="onLoginSuccess()"  class="position-fixed top-0 start-0 w-100"></app-login-form>
+    <app-login-form   class="position-fixed top-0 start-0 w-100 blur-background"></app-login-form>
   </div>
-  
-  <router-outlet *ngIf="isAuthenticated"></router-outlet>
+<div>
+  <router-outlet ></router-outlet>
+</div>
   
 </div>

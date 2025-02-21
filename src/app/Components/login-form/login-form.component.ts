@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { AuthenticationService } from '../../Services/authentication.service';
 import { first } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
+import { AppComponent } from '../../app.component';
 
 @Component({
   selector: 'app-login-form',
@@ -17,7 +18,6 @@ export class LoginFormComponent {
   
   checkLoginType() {
     const loginInput = (document.getElementById('loginInput') as HTMLInputElement).value;
-    // Check if the input contains '@' to determine if it's an email
     if (loginInput.includes('@')) {
       this.loginType = 'email';
     } else {
@@ -28,18 +28,15 @@ export class LoginFormComponent {
   async onSubmit(loginForm: NgForm) {
     if (loginForm.valid) {
       const loginData = loginForm.value;
-      // debugger
-      // Call the AuthService to authenticate the user
       this.authService.login(loginData)
-      .pipe(first())
       .subscribe({
         next: (response) => {
           console.log('Login successful', response);
           this.authService.setAuthToken(response.token);
-          const redirectUrl = localStorage.getItem('redirectUrl') || '/profile';
+          localStorage.setItem('role',response.role);
+          this.authService.setAuthenticated(true);
+          let redirectUrl = localStorage.getItem('redirectUrl') || '/profile';
           localStorage.removeItem('redirectUrl');
-          console.log(redirectUrl);
-          console.log(localStorage.getItem('redirectUrl'))
           this.router.navigate([redirectUrl]);
         },
         error: (error) => {
