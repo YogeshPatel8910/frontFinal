@@ -1,0 +1,26 @@
+  <div class="container-fluid d-flex justify-content-center align-items-center vh-auto my-5">
+    <div class="shadow-lg rounded-3 px-4 py-4 border col-md-6 col-lg-5" style="background-color: azure;">
+      <h2 class="text-center mb-3">Register</h2>
+
+    <!-- Dynamic Form -->
+    <form *ngIf="registerForm" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <!-- Role Selection (Inside Form) -->
+      <div class="mb-3">
+        <label class="form-label">Select Role</label>
+        <select class="form-select" formControlName="role">
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+
+      <!-- Dynamically Generated Fields -->
+      <div *ngFor="let key of roleFields[registerForm.get('role')?.value]" class="mb-3">
+        <label class="form-label">{{ key | titlecase }}</label>
+        <input type="text" class="form-control" [formControlName]="key" [placeholder]="placeholders[key]">
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100" [disabled]="!registerForm.valid">
+        Register
+      </button>
+    </form>
+  </div>
+</div>

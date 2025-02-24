@@ -1,21 +1,28 @@
-<div>
-    <div>
-        <app-header></app-header>
+<div class="container-fluid">
+  <div class="vh-100">
+    <app-header></app-header>
+    <div class=" container-fluid w-50 py-4">
+      <form
+        *ngIf="profileForm"
+        [formGroup]="profileForm"
+        (ngSubmit)="onSubmit()"
+      >
+        <div *ngFor="let key of dataKeys" class="mb-3">
+          <label class="form-label">{{ key | titlecase}}</label>
+          <input
+            type="text"
+            class="form-control"
+            [formControlName]="key"
+            [readonly]="disabledFields.includes(key)"
+          />
+          <!-- ✅ Prevents manual input -->
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="!isChanged">
+          Save Changes
+        </button>
+      </form>
     </div>
-    <div class="container-fluid vh-100 w-50 py-4">
-        <form *ngIf="profileForm" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-            <div *ngFor="let key of dataKeys" class="mb-3">
-                <label class="form-label">{{ key }}</label>
-                <input 
-                type="text" 
-                class="form-control"
-                [formControlName]="key"
-                [readonly]="disabledFields.includes(key)"> <!-- ✅ Prevents manual input -->
-            </div>
-            
-            <button type="submit" class="btn btn-primary w-100">Save Changes</button>
-        </form>
-    </div>
-    <app-footer></app-footer>
+  </div>
+  <app-footer></app-footer>
 </div>
-  

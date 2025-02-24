@@ -13,7 +13,9 @@ export class ProfileComponent implements OnInit{
   data: { [key: string]: any }={}
   profileForm!: FormGroup;
   disabledFields = ['id', 'createdAt', 'updatedAt','roleName','appointment','branch','medicalReport','department','availableDays'];
+  noShowField=['name'];
   dataKeys: string[] = [];
+  isChanged=false;
 Object: any;
   constructor(private apiService: ApiService,private fb: FormBuilder,private router:Router) {}
   ngOnInit() {
@@ -34,11 +36,14 @@ Object: any;
     this.profileForm = this.fb.group({});
     this.dataKeys = Object.keys(this.data).filter(el => !this.disabledFields.includes(el));
     this.dataKeys.forEach((key) => {
-      const isDisabled = this.disabledFields.includes(key);
+      const isDisabled = this.noShowField.includes(key);
       this.profileForm.addControl(
         key,
         new FormControl({ value: this.data[key], disabled: isDisabled })
       );
+    });
+    this.profileForm.valueChanges.subscribe(() => {
+      this.isChanged = this.profileForm.dirty; // Check if form is changed
     });
   }
   onSubmit() {
@@ -46,6 +51,7 @@ Object: any;
       this.apiService.updateData(this.profileForm.getRawValue()).subscribe({
         next: (response) => {
           console.log("Updated Data Successfully:", response);
+          this.isChanged = false; 
           alert("Profile updated successfully!");
         },
         error: (error) => {

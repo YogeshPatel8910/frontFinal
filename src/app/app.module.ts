@@ -13,6 +13,7 @@ import { HeaderComponent } from './Components/header/header.component';
 import { FooterComponent } from './Components/footer/footer.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppointmentsComponent } from './Components/appointments/appointments.component';
+import { RegisterFormComponent } from './Components/register-form/register-form.component';
 
 
 @NgModule({
@@ -23,6 +24,7 @@ import { AppointmentsComponent } from './Components/appointments/appointments.co
     HeaderComponent,
     FooterComponent,
     AppointmentsComponent,
+    RegisterFormComponent
   ],
   imports: [
     BrowserModule,
