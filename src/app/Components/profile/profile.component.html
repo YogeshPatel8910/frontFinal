@@ -1,7 +1,13 @@
 <div class="container-fluid">
-  <div class="vh-100">
+  <div class="vh-auto">
     <app-header></app-header>
     <div class=" container-fluid w-50 py-4">
+      
+      <!-- <div *ngFor="let key of dataKeysAll">
+        {{key}}:{{data[key]|json}}
+        <p>qwertyuiop</p>
+        <p></p>
+      </div> -->
       <form
         *ngIf="profileForm"
         [formGroup]="profileForm"

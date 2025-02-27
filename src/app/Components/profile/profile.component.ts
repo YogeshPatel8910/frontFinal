@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../api.service';
-import { first } from 'rxjs';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -22,6 +21,8 @@ Object: any;
     this.apiService.getData()
     .subscribe({
       next:(response)=>{
+        console.log(response);
+        
         this.data=response;
         this.dataKeys = Object.keys(this.data);
         this.initForm();
@@ -48,13 +49,18 @@ Object: any;
   }
   onSubmit() {
     if (this.profileForm.valid) {
-      this.apiService.updateData(this.profileForm.getRawValue()).subscribe({
-        next: (response) => {
+      let updatedData = this.profileForm.getRawValue(); 
+
+    // Manually include 'roleName' in the request payload
+      updatedData.roleName = this.data['roleName'];
+      console.log(updatedData)
+      this.apiService.updateData(updatedData).subscribe({
+        next: (response: any) => {
           console.log("Updated Data Successfully:", response);
           this.isChanged = false; 
           alert("Profile updated successfully!");
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error("Error updating profile:", error);
           alert("Error updating profile. Please try again.");
         }

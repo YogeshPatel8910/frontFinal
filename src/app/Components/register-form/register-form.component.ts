@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthenticationService } from '../../Services/authentication.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register-form',
@@ -8,28 +10,33 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 })
 export class RegisterFormComponent implements OnInit {
   registerForm!: FormGroup;
-  roles: string[] = ['Patient', 'Doctor', 'Admin']; // Available roles
+  isLoading = false;
+  errorMessage: string | null = null;
+  roles = [
+    { label: 'Patient', value: 'ROLE_PATIENT' },
+    { label: 'Doctor', value: 'ROLE_DOCTOR' },
+    { label: 'Admin', value: 'ROLE_ADMIN' }
+  ];
 
-  // Fields based on role selection
-  placeholders: { [key: string]: string } = {
-    name: 'Enter full name',
-    email: 'Enter email address',
-    password: 'Enter password',
-    phone: 'Enter phone number',
-    address: 'Enter home address',
-    specialization: 'Enter specialization',
-    department: 'Enter department',
-    age:'Enter age',
-    gender:'Enter gender'
-  };
-  // Fields based on role selection
-  roleFields: { [key: string]: string[] } = {
-    Patient: ['name', 'email', 'password', 'phone', 'address','age','gender'],
-    Doctor: ['name', 'email', 'password', 'phone', 'specialization'],
-    Admin: ['name', 'email', 'password', 'phone'],
+  fieldConfig: Record<string, { type: string; placeholder: string; validators: any[]; errors: Record<string, string>; options?: string[] }> = {
+    name: { type: 'text', placeholder: 'Enter full name', validators: [Validators.required, Validators.minLength(3)], errors: { required: 'Name is required', minlength: 'Name must be at least 3 characters' } },
+    email: { type: 'email', placeholder: 'Enter email address', validators: [Validators.required, Validators.email], errors: { required: 'Email is required', email: 'Enter a valid email' } },
+    password: { type: 'password', placeholder: 'Enter password', validators: [Validators.required, Validators.minLength(6)], errors: { required: 'Password is required', minlength: 'Password must be at least 6 characters' } },
+    confirmPassword: { type: 'password', placeholder: 'Confirm password', validators: [Validators.required], errors: { required: 'Password confirmation is required' } },
+    mobileNo: { type: 'text', placeholder: 'Enter phone number', validators: [Validators.required, Validators.pattern(/^\d{10}$/)], errors: { required: 'Phone is required', pattern: 'Enter a valid 10-digit phone number' } },
+    address: { type: 'text', placeholder: 'Enter home address', validators: [Validators.required], errors: { required: 'Address is required' } },
+    specialization: { type: 'text', placeholder: 'Enter specialization', validators: [Validators.required], errors: { required: 'Specialization is required' } },
+    age: { type: 'number', placeholder: 'Enter age', validators: [Validators.required, Validators.min(1), Validators.max(120)], errors: { required: 'Age is required', min: 'Age must be at least 1', max: 'Age cannot exceed 120' } },
+    gender: { type: 'select', placeholder: 'Select gender', validators: [Validators.required], errors: { required: 'Gender is required' }, options: ['Male', 'Female'] }
   };
 
-  constructor(private fb: FormBuilder) {}
+  roleFields: Record<string, string[]> = {
+    ROLE_PATIENT: ['name', 'email', 'password', 'confirmPassword', 'mobileNo', 'address', 'age', 'gender'],
+    ROLE_DOCTOR: ['name', 'email', 'password', 'confirmPassword', 'mobileNo', 'specialization'],
+    ROLE_ADMIN: ['name', 'email', 'password', 'confirmPassword', 'mobileNo']
+  };
+
+  constructor(private fb: FormBuilder, private authService: AuthenticationService, private router : Router) {}
 
   ngOnInit() {
     this.initForm();
@@ -37,38 +44,47 @@ export class RegisterFormComponent implements OnInit {
 
   initForm() {
     this.registerForm = this.fb.group({
-      role: ['Patient', Validators.required], // Default role
+      roleName: ['ROLE_PATIENT', Validators.required]
     });
 
-    // Update form fields when role changes
-    this.registerForm.get('role')?.valueChanges.subscribe((role) => {
-      this.updateFormFields(role);
-    });
-
-    // Initialize fields based on default role
-    this.updateFormFields('Patient');
+    this.registerForm.get('roleName')?.valueChanges.subscribe(role => this.updateFormFields(role));
+    this.updateFormFields('ROLE_PATIENT');
   }
 
   updateFormFields(role: string) {
-    // Remove all previous fields except 'role'
     Object.keys(this.registerForm.controls).forEach(key => {
-      if (key !== 'role') {
+      if (key !== 'roleName') {
         this.registerForm.removeControl(key);
       }
     });
 
-    // Add fields dynamically based on role
-    this.roleFields[role].forEach((field) => {
-      this.registerForm.addControl(
-        field,
-        new FormControl('', Validators.required)
-      );
+    this.roleFields[role].forEach(field => {
+      this.registerForm.addControl(field, this.fb.control('', this.fieldConfig[field].validators));
     });
   }
 
   onSubmit() {
-    if (this.registerForm.valid) {
-      console.log('Form Submitted:', this.registerForm.getRawValue());
+    if (this.registerForm.invalid) return;
+
+    if (this.registerForm.value.password !== this.registerForm.value.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
     }
+    console.log(this.registerForm.value);
+    
+    this.isLoading = true;
+    this.authService.register(this.registerForm.value).subscribe({
+      next: (response: any) => {
+        console.log('Registration Successful', response);
+        this.isLoading = false;
+        let redirectUrl = localStorage.getItem('redirectUrl') || '/profile';
+        this.router.navigate([redirectUrl]);
+
+      },
+      error: (error: { error: { message: string; }; }) => {
+        this.errorMessage = error.error?.message || 'Registration failed!';
+        this.isLoading = false;
+      }
+    });
   }
 }

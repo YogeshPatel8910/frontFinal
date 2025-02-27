@@ -24,7 +24,7 @@ export class AuthenticationService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
 
-  private apiUrl = 'http://localhost:8081/api/auth/login';  // Replace with your Spring Boot URL
+  private apiUrl = 'http://192.168.0.72:8081/api/auth/';  // Replace with your Spring Boot URL
 
   constructor(private http: HttpClient) {}
  
@@ -42,7 +42,11 @@ export class AuthenticationService {
   }
   
   login(loginRequest: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(this.apiUrl, loginRequest,{ withCredentials: true });
+    return this.http.post<LoginResponse>(this.apiUrl.concat('login'), loginRequest);
+  }
+
+  register(registerRequest:any):any{
+    return this.http.post(this.apiUrl.concat('register'),registerRequest);
   }
 
   logout(){

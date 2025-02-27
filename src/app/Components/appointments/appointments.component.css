@@ -1,0 +1,66 @@
+.appointment-card {
+    border-left: 5px solid var(--bs-primary);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    border-radius: 10px;
+}
+
+.appointment-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 5px 15px rgba(175, 47, 47, 0.1);
+}
+
+
+/* Button hover effect */
+.btn-primary {
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Center align empty state */
+.text-muted {
+    font-size: 1.2rem;
+}
+.border-warning { border-left: 4px solid #ffc107 !important; }  /* Pending - Yellow */
+.border-success { border-left: 4px solid #28a745 !important; }  /* Confirmed - Green */
+.border-danger { border-left: 4px solid #dc3545 !important; }   /* Cancelled - Red */
+.border-primary { border-left: 4px solid #007bff !important; }  /* Completed - Blue */
+.border-secondary { border-left: 4px solid #6c757d !important; } /* Default - Gray */
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 12px;
+    min-width: 70px;
+    text-align: center;
+}
+
+.clickable-card {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.3s;
+}
+
+.clickable-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-in-out;
+}

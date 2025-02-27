@@ -11,9 +11,11 @@ import { ProfileComponent } from './Components/profile/profile.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { HeaderComponent } from './Components/header/header.component';
 import { FooterComponent } from './Components/footer/footer.component';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { AppointmentsComponent } from './Components/appointments/appointments.component';
 import { RegisterFormComponent } from './Components/register-form/register-form.component';
+import { AppointmentFormComponent } from './Components/appointment-form/appointment-form.component';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 
 @NgModule({
@@ -24,7 +26,8 @@ import { RegisterFormComponent } from './Components/register-form/register-form.
     HeaderComponent,
     FooterComponent,
     AppointmentsComponent,
-    RegisterFormComponent
+    RegisterFormComponent,
+    AppointmentFormComponent
   ],
   imports: [
     BrowserModule,
@@ -33,7 +36,8 @@ import { RegisterFormComponent } from './Components/register-form/register-form.
     HttpClientModule,
     BrowserModule,
     ReactiveFormsModule,
-    NgbModule
+    NgbModule,
+    NgxPaginationModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: authInterceptor, multi: true },

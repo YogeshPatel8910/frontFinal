@@ -1,5 +1,5 @@
 <div class="container-fuild d-flex justify-content-center align-items-center vh-100  " >
-    <div class="shadow-lg rounded-3 px-4 py-4 border col-md-6 col-lg-5  " style="background-color: azure; ">
+    <div class="shadow-lg rounded-3 px-4 py-4 border col-md-6 col-lg-4  " style="background-color: azure; ">
         <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)"  method="POST">
             <!-- Input for Email or Username -->
             <div class="mb-3">
@@ -15,8 +15,13 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="text-center">
+            <div class="text-center mt-4">
                 <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.valid">Submit</button>
+            </div>
+            <div class="text-center mt-4">
+                <p>Don't have an account? 
+                    <a routerLink="/signup" class="text-primary" style="text-decoration: none;">Sign Up</a>
+                </p>
             </div>
         </form>
     </div>
