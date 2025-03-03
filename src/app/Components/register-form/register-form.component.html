@@ -1,48 +1,47 @@
 <div class="container-fluid d-flex justify-content-center align-items-center vh-auto my-4">
-  <div class="shadow-lg rounded-3 px-4 py-4 border col-md-6 col-lg-5" style="background-color: azure;">
-      <h2 class="text-center mb-3">Register</h2>
-      
-      <form *ngIf="registerForm" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-          <!-- Role Selection -->
-          <div class="mb-3">
-              <label class="form-label">Select Role</label>
-              <select class="form-select" formControlName="roleName">
-                  <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
-              </select>
-          </div>
+    <div class="shadow-lg rounded-3 px-4 py-4 border col-md-6 col-lg-5" style="background-color: azure;">
+        <h2 class="text-center mb-3">Register</h2>
 
-          <!-- Dynamic Fields -->
-          <div *ngFor="let key of roleFields[registerForm.get('roleName')?.value]" class="mb-3">
-              <label class="form-label">{{ key | titlecase }}</label>
-              
-              <!-- Select Input -->
-              <select *ngIf="fieldConfig[key].type === 'select'" class="form-select" [formControlName]="key">
-                  <option value="">{{ fieldConfig[key].placeholder }}</option>
-                  <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
-              </select>
+        <form *ngIf="registerForm" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <!-- Role Selection -->
+            <div class="mb-3">
+                <label class="form-label">Select Role</label>
+                <select class="form-select" formControlName="roleName">
+                    <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+                </select>
+            </div>
 
-              <!-- Other Input Types -->
-              <input *ngIf="fieldConfig[key].type !== 'select'" [type]="fieldConfig[key].type" class="form-control"
-                     [formControlName]="key"
-                     [placeholder]="fieldConfig[key].placeholder"
-                     [ngClass]="{'is-invalid': registerForm.get(key)?.invalid && registerForm.get(key)?.touched}">
+            <!-- Dynamic Fields -->
+            <div *ngFor="let key of roleFields[registerForm.get('roleName')?.value]" class="mb-3">
+                <label class="form-label">{{ key | titlecase }}</label>
 
-              <!-- Error Messages -->
-              <div *ngIf="registerForm.get(key)?.invalid && registerForm.get(key)?.touched" class="text-danger small">
-                  <span *ngFor="let error of fieldConfig[key].errors | keyvalue">
-                      <span *ngIf="registerForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
-                  </span>
-              </div>
-          </div>
+                <!-- Select Input -->
+                <select *ngIf="fieldConfig[key].type === 'select'" class="form-select" [formControlName]="key">
+                    <option value="">{{ fieldConfig[key].placeholder }}</option>
+                    <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
+                </select>
 
-          <button type="submit" class="btn btn-primary w-100 mt-3" [disabled]="!registerForm.valid">
-              Register
-          </button>
-          <div class="text-center mt-4">
-                <p>Already have an account? 
+                <!-- Other Input Types -->
+                <input *ngIf="fieldConfig[key].type !== 'select'" [type]="fieldConfig[key].type" class="form-control"
+                    [formControlName]="key" [placeholder]="fieldConfig[key].placeholder"
+                    [ngClass]="{'is-invalid': registerForm.get(key)?.invalid && registerForm.get(key)?.touched}">
+
+                <!-- Error Messages -->
+                <div *ngIf="registerForm.get(key)?.invalid && registerForm.get(key)?.touched" class="text-danger small">
+                    <span *ngFor="let error of fieldConfig[key].errors | keyvalue">
+                        <span *ngIf="registerForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-3" [disabled]="!registerForm.valid">
+                Register
+            </button>
+            <div class="text-center mt-4">
+                <p>Already have an account?
                     <a routerLink="/login" class="text-primary" style="text-decoration: none;">Login</a>
                 </p>
             </div>
-      </form>
-  </div>
+        </form>
+    </div>
 </div>

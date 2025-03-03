@@ -8,26 +8,35 @@
         <p>qwertyuiop</p>
         <p></p>
       </div> -->
-      <form
-        *ngIf="profileForm"
-        [formGroup]="profileForm"
-        (ngSubmit)="onSubmit()"
-      >
-        <div *ngFor="let key of dataKeys" class="mb-3">
-          <label class="form-label">{{ key | titlecase}}</label>
-          <input
-            type="text"
-            class="form-control"
-            [formControlName]="key"
-            [readonly]="disabledFields.includes(key)"
-          />
-          <!-- ✅ Prevents manual input -->
-        </div>
+      <form *ngIf="profileForm" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Dynamic Fields -->
+        <div *ngFor="let key of roleFields[data.roleName]" class="mb-3">
+            <label class="form-label">{{ key | titlecase }}</label>
 
-        <button type="submit" class="btn btn-primary w-100" [disabled]="!isChanged">
-          Save Changes
+            <!-- Select Input -->
+            <select *ngIf="fieldConfig[key].type === 'select'" class="form-select" [formControlName]="key">
+                <option value="">{{ fieldConfig[key].placeholder }}</option>
+                <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
+            </select>
+
+            <!-- Other Input Types -->
+            <input *ngIf="fieldConfig[key].type !== 'select'" [type]="fieldConfig[key].type" class="form-control"
+                [formControlName]="key" [placeholder]="fieldConfig[key].placeholder" [disabled]="fieldConfig[key].disabled ?? false"
+                [ngClass]="{'is-invalid': profileForm.get(key)?.invalid && profileForm.get(key)?.touched}">
+
+            <!-- Error Messages -->
+            <div *ngIf="profileForm.get(key)?.invalid && profileForm.get(key)?.touched" class="text-danger small">
+                <span *ngFor="let error of fieldConfig[key].errors | keyvalue">
+                    <span *ngIf="profileForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
+                </span>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mt-3" [disabled]="!(profileForm.valid && isChanged)">
+            Save Changes
         </button>
-      </form>
+        
+    </form>
     </div>
   </div>
   <app-footer></app-footer>

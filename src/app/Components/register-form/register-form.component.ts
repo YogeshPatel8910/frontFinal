@@ -75,9 +75,14 @@ export class RegisterFormComponent implements OnInit {
     this.isLoading = true;
     this.authService.register(this.registerForm.value).subscribe({
       next: (response: any) => {
-        console.log('Registration Successful', response);
+        console.log('Registration Successful', response.user);
         this.isLoading = false;
+        this.authService.setAuthToken(response.token);
+          localStorage.setItem('role',response.role);
+          this.authService.setAuthenticated(true);
         let redirectUrl = localStorage.getItem('redirectUrl') || '/profile';
+        console.log(redirectUrl);
+        
         this.router.navigate([redirectUrl]);
 
       },

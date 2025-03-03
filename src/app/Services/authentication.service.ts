@@ -24,7 +24,7 @@ export class AuthenticationService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
 
-  private apiUrl = 'http://192.168.0.72:8081/api/auth/';  // Replace with your Spring Boot URL
+  private apiUrl = 'http://localhost:8081/api/auth/';  // Replace with your Spring Boot URL
 
   constructor(private http: HttpClient) {}
  

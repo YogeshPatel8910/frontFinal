@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ApiService } from '../../api.service';
+import { ApiService } from '../../Services/api.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -19,8 +19,7 @@ export class AppointmentsComponent implements OnInit {
   constructor(private apiService: ApiService, private router: Router, private modalService: NgbModal) {}
 
   ngOnInit() {
-    this.apiService.getAppointment()
-      .subscribe({
+    this.apiService.getAppointment().subscribe({
         next: (response: [{ [key: string]: any }]) => {
           console.log(response);
           this.role=localStorage.getItem('role') || '';

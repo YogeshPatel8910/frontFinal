@@ -5,10 +5,10 @@
           <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"></use></svg>
         </a>
 
-        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+        <ul class="nav nav-pill col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
           <li><a routerLink="/profile" class="nav-link px-2 link-secondary">Overview</a></li>
-          <li><a href="#" class="nav-link px-2 link-dark">Inventory</a></li>
-          <li><a *ngIf="(role==='doctor')"  class="nav-link px-2 link-dark">Leave</a></li>
+          <li><a *ngIf="(role==='admin')" routerLink="/users" class="nav-link px-2 link-dark">Users</a></li>
+          <li><a *ngIf="(role==='doctor')" routerLink="/leave" class="nav-link px-2 link-dark">Leave</a></li>
           <li><a routerLink="/appointment" class="nav-link px-2 link-dark">Appointments</a></li>
         </ul>
 

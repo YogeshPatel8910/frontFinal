@@ -11,11 +11,13 @@ import { ProfileComponent } from './Components/profile/profile.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { HeaderComponent } from './Components/header/header.component';
 import { FooterComponent } from './Components/footer/footer.component';
-import { NgbModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppointmentsComponent } from './Components/appointments/appointments.component';
 import { RegisterFormComponent } from './Components/register-form/register-form.component';
 import { AppointmentFormComponent } from './Components/appointment-form/appointment-form.component';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { UsersComponent } from './Components/users/users.component';
+import { LeaveComponent } from './Components/leave/leave.component';
 
 
 @NgModule({
@@ -27,7 +29,11 @@ import { NgxPaginationModule } from 'ngx-pagination';
     FooterComponent,
     AppointmentsComponent,
     RegisterFormComponent,
-    AppointmentFormComponent
+    AppointmentFormComponent,
+    UsersComponent,
+    LeaveComponent,
+    
+
   ],
   imports: [
     BrowserModule,

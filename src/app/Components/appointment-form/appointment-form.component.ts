@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../api.service';
+import { ApiService } from '../../Services/api.service';
 import { animate } from '@angular/animations';
 
 interface FieldConfig {

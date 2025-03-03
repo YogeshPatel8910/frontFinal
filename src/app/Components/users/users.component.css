@@ -1,0 +1,13 @@
+.delete-popup {
+    position: sticky;
+    right: 0;
+    bottom: 0;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    white-space: nowrap;
+  }
+  
