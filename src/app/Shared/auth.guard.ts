@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthenticationService } from './Services/authentication.service';
+import { AuthenticationService } from '../Services/authentication.service';
 import { catchError, map, of } from 'rxjs';
 
 export const authGuard: CanActivateFn = (route, state) => {
@@ -16,7 +16,7 @@ export const authGuard: CanActivateFn = (route, state) => {
       }
       return true;
     }),
-    catchError(() => {
+    catchError((err) => {
       localStorage.setItem('redirectUrl', state.url);
       router.navigate(['/login']);
       return of(false); 

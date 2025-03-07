@@ -26,9 +26,10 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary w-100 mt-3" [disabled]="!appointmentForm.valid">
-            Book Appointment
-        </button>
+        <button type="submit" class="btn btn-primary w-100 mt-3" 
+        [disabled]="isRescheduleMode ? (!appointmentForm.valid || isSameAsOriginal()) : !appointmentForm.valid">
+        {{ isRescheduleMode ? 'Reschedule Appointment' : 'Book Appointment' }}
+    </button>
     </form>
 
 </div>

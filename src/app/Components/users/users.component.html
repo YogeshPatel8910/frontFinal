@@ -1,10 +1,10 @@
 <app-header></app-header>
 <div class="container mt-4">
-  <div class="d-flex justify-content-end">
+  <!-- <div class="d-flex justify-content-end">
     <button class="btn btn-primary ms-auto" (click)="sortByName()">
       Sort by Name
     </button>
-  </div>
+  </div> -->
   <div class="container-fluid p-0">
     <!-- Role Filter (Tabs) -->
     <ul class="nav nav-tabs">
@@ -30,7 +30,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users">
+          <tr *ngFor="let user of users | paginate: {itemsPerPage:itemsPerPage , currentPage: currentPage, totalItems:totalElements }" >
             <td *ngFor="let column of tableColumns[selectedRole]">
               <ng-container *ngIf="
                   column === 'updatedAt' || column === 'createdAt';

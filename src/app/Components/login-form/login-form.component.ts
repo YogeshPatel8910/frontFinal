@@ -13,7 +13,6 @@ export class LoginFormComponent {
   errorMessage: string = '';  // For displaying error messages
 
   constructor(private authService: AuthenticationService,private router:Router) {}
-  
   checkLoginType() {
     const loginInput = (document.getElementById('loginInput') as HTMLInputElement).value;
     if (loginInput.includes('@')) {
@@ -22,8 +21,9 @@ export class LoginFormComponent {
       this.loginType = 'username';
     }
   }
-
+  
   async onSubmit(loginForm: NgForm) {
+    // debugger
     if (loginForm.valid) {
       const loginData = loginForm.value;
       this.authService.login(loginData)

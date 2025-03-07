@@ -1,1 +1,140 @@
-<p>leave works!</p>
+<div class="container-fluid p-0 ">
+  <app-header></app-header>
+  <div class="leave-container ">
+    <div class="calendar-wrapper">
+      <div class="calendar-header">
+        <button class="nav-btn" (click)="changeMonth(-1)">⬅️</button>
+        <h2>{{ getMonthName(currentMonth) }} {{ currentYear }}</h2>
+        <button class="nav-btn" (click)="changeMonth(1)">➡️</button>
+      </div>
+
+      <div class="week-header">
+        <div *ngFor="let day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']">
+          {{ day }}
+        </div>
+      </div>
+
+      <div class="calendar-grid">
+        <div *ngFor="let day of daysInMonth" class="calendar-day" [ngClass]="{
+            selected: day?.dateString && isLeaveSelected(day.dateString),
+            'past-day': day?.isPast,
+            'past-leave': day?.isPastLeave && day?.isPast,
+            'leave-selected': day?.isPastLeave && !day?.isPast
+          }" (click)="onClick(day?.dateString)">
+          <div *ngIf="day">
+            <span class="date-number">{{ day.day }}</span>
+            <span class="day-name">{{ day.dayName }}</span>
+
+            <!-- Show leave reason inside the date box -->
+            <div class="leave-note" *ngIf="leaveNotes[day.dateString]">
+              📌 {{ leaveNotes[day.dateString] }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="side-add mb-2">
+        <div class="">
+          <h3>{{ selectType ? 'Delete Leave' : 'Add Leave' }}</h3>
+        
+          <ul *ngIf="selectedLeaves.size > 0; else noLeaves">
+            <li class="badge badge-pill"
+              *ngFor="let leave of getLeaveModalDatesArray()"
+            >
+              {{ leave | date:'dd-MM-yyyy'}} 
+            </li>  
+          </ul>
+        
+          <ng-template #noLeaves>
+            <p>No leave days selected.</p>
+          </ng-template>
+        
+          <textarea [(ngModel)]="leaveReason" placeholder="Enter reason for leave..." 
+            [disabled]="selectedLeaves.size === 0 || !!selectType">
+          </textarea>
+          <div class="buttons">
+            <button (click)="toggleDeleteMode()" [disabled]="selectedLeaves.size===0">
+              {{ 'Cancel' }}
+            </button>
+        
+            <button *ngIf="!selectType" (click)="openModal(false, confirmModal)" class="confirm-btn" 
+              [disabled]="selectedLeaves.size === 0">
+              ✅ Confirm
+            </button>
+        
+            <button *ngIf="selectType" (click)="openModal(true, confirmModal)" class="delete-btn" 
+              [disabled]="selectedLeaves.size === 0">
+              ❌ Delete Leave
+            </button>
+          </div>
+        </div>
+        
+      </div>
+      <div class="side-summary accordion accordion-flush p-2" id="accordionFlushExample">
+        <div class="accordion-item ">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+              This month's Leaves
+            </button>
+          </h3>
+          <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+            <div class="accordion-body ">
+              <ul *ngIf="pastLeaves.length > 0; else noPastLeaves">
+                <li *ngFor="let leave of getSortedLeaves('present')">
+                  ⏳ {{ leave| date:'dd-MM-yyyy' }}
+                </li>
+              </ul>
+              <ng-template #noPastLeaves>
+                <p>No past leaves recorded.</p>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+              Past Leave Days
+            </button>
+          </h3>
+          <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+            <div class="accordion-body">
+              <ul *ngIf="pastLeaves.length > 0; else noPastLeaves">
+                <li *ngFor="let leave of getSortedLeaves('past')">
+                  ⏳ {{ leave| date:'dd-MM-yyyy' }}
+                </li>
+              </ul>
+              <ng-template #noPastLeaves>
+                <p>No past leaves recorded.</p>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Confirmation Modal -->
+<ng-template #confirmModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">{{ isRemoving ? 'Confirm Cancellation' : 'Confirm Leave' }}</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  
+  <div class="modal-body">
+    <p>
+      {{ isRemoving ? 'Are you sure you want to cancel this appointment?' : 'Are you sure you want to confirm this leave?' }}
+    </p>
+  </div>
+  
+  <div class="modal-footer">
+    <button class="btn" 
+            [ngClass]="isRemoving ? 'btn-danger' : 'btn-success'" 
+            (click)="isRemoving ? removeLeave(modal) : confirmLeave(modal)">
+      {{ isRemoving ? 'Yes, Cancel' : '✅ Confirm Leave' }}
+    </button>
+    <button class="btn btn-secondary" (click)="modal.dismiss()">No</button>
+  </div>
+</ng-template>

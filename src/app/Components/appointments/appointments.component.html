@@ -2,82 +2,111 @@
     <!-- Header remains visible -->
     <app-header></app-header>
 
-    <div class="container-fluid vh-100 pt-4"style="background-color: rgba(15, 160, 228, 0.089); ">
+    <div class="container-fluid pt-4" style="background-color: rgba(15, 160, 228, 0.089)">
         <!-- Blur effect only on the table and background, not header -->
         <div [class.blur-background]="showForm">
-            <div *ngIf="!(role==='doctor')" class="text-center mb-4">
-                <button class="btn btn-primary" (click)="toggleForm()">
-                    <i class="bi bi-plus-circle"></i> {{ showForm ? 'Cancel' : 'Create Appointment' }}
+            <div *ngIf="role === 'patient'" class="text-center mb-4">
+                <button class="btn btn-primary" (click)="createForm()">
+                    <i class="bi bi-plus-circle"></i>
+                    {{ showForm ? "Cancel" : "Create Appointment" }}
                 </button>
             </div>
             <!-- <p>{{data|json}}</p> -->
             <!-- Appointments Table -->
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-md-10 mt-2" *ngFor="let appointment of appointments | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }">
-                        <div class="card appointment-card shadow-sm clickable-card"  style="background-color: rgba(202, 27, 27, 0.096);"  [ngClass]="getStatusClasses(appointment.status)" (click)="openModal(content, appointment)"
-                        >
+                    <div class="col-md-10 mt-2" *ngFor="
+              let appointment of appointments
+                | paginate
+                  : {
+                      itemsPerPage: itemsPerPage,
+                      currentPage: currentPage,
+                      totalItems: totalElements
+                    }
+            ">
+                        <div class="card appointment-card shadow-sm clickable-card"
+                            style="background-color: rgba(202, 27, 27, 0.096)"
+                            [ngClass]="getStatusClasses(appointment.status)" (click)="openModal(content, appointment)">
                             <div class="card-body d-flex flex-column gap-1">
-                                
                                 <!-- Appointment Info -->
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted fw-bold">
-                                        {{ appointment.doctorName }}  | {{ appointment.branchName }} | {{ appointment.departmentName }}
+                                    <span *ngIf="role === 'doctor'" class="text-muted fw-bold">
+                                        {{ appointment.patientName }} |
+                                        {{ appointment.branchName }} |
+                                        {{ appointment.departmentName }}
+                                    </span>
+                                    <span *ngIf="role === 'patient'" class="text-muted fw-bold">
+                                        {{ appointment.doctorName }} |
+                                        {{ appointment.branchName }} |
+                                        {{ appointment.departmentName }}
+                                    </span>
+                                    <span *ngIf="role === 'admin'" class="text-muted fw-bold">
+                                        {{ appointment.patientName }} |
+                                        {{ appointment.doctorName }} |
+                                        {{ appointment.branchName }} |
+                                        {{ appointment.departmentName }}
                                     </span>
                                     <span class="badge status-badge" [ngClass]="getStatusClasses(appointment.status)">
                                         {{ appointment.status }}
                                     </span>
                                 </div>
-            
-                                 <!-- Date & Time + Action Buttons (Inline) -->
-                                 <div class="d-flex justify-content-between align-items-center text-muted mt-2">
-                                    <span>📅 {{ appointment.date }} ⏰ {{ appointment.timeSlot }}</span>
+
+                                <!-- Date & Time + Action Buttons (Inline) -->
+                                <div class="d-flex justify-content-between align-items-center text-muted mt-2">
+                                    <span class="fs-6">📅 {{ appointment.date | date : "fullDate" }} ⏰
+                                        {{ appointment.timeSlot | timeFormat }}</span>
                                     <div class="d-flex gap-2">
-                                        <button *ngIf="!(role==='doctor')" class="btn btn-sm btn-outline-danger" (click)="onAppointmentClick2($event,appointment);">
+                                        <button *ngIf="
+                        role === 'patient' &&
+                        !(appointment.status === 'CANCELLED')
+                      " class="btn btn-sm btn-outline-danger" (click)="onCancel($event, appointment)">
                                             ❌ Cancel
                                         </button>
-                                        <button class="btn btn-sm btn-outline-primary"(click)="onAppointmentClick1($event,appointment);" >
+                                        <button *ngIf="
+                        !(role === 'admin') &&
+                        !(appointment.status === 'CANCELLED')
+                      " class="btn btn-sm btn-outline-primary" (click)="onReschedule($event, appointment)">
                                             🔄 Reschedule
                                         </button>
-                                        <button *ngIf="(role==='doctor')" class="btn btn-sm btn-outline-secondary">
-                                        📄 Report
-                                    </button>
+                                        <button *ngIf="role === 'doctor'" class="btn btn-sm btn-outline-secondary">
+                                            📄 Report
+                                        </button>
                                     </div>
                                 </div>
-            
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            
-
 
             <!-- Pagination Controls -->
-            <pagination-controls (pageChange)="currentPage = $event"
-                class="mt-3 d-flex justify-content-center position-down "></pagination-controls>
+            <pagination-controls (pageChange)="onPageChange($event)" class="mt-3 d-flex justify-content-center">
+            </pagination-controls>
         </div>
-
     </div>
 
     <!-- Appointment Form Popup -->
-    <div *ngIf="showForm" class="modal fade show d-block " style="background-color: rgba(0, 0, 0, 0.5);" tabindex="-1"
+    <div *ngIf="showForm" class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5)" tabindex="-1"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content ">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Book an Appointment</h3>
-                    <button type="button" class="btn-close custom-close" (click)="toggleForm()">
-                    </button>
+                    <h3>
+                        {{
+                        isRescheduleMode
+                        ? "Reschedule Appointment"
+                        : "Book an Appointment"
+                        }}
+                    </h3>
+                    <button type="button" class="btn-close custom-close" (click)="toggleForm()"></button>
                 </div>
                 <div class="modal-body p-4 position-relative">
-                    <app-appointment-form (closeForm)="toggleForm()"></app-appointment-form>
+                    <app-appointment-form [appointmentData]="selectedAppointment" [isRescheduleMode]="isRescheduleMode"
+                        (closeForm)="toggleForm()"></app-appointment-form>
                 </div>
             </div>
         </div>
     </div>
-
 
     <ng-template #noAppointments>
         <p>No appointments available.</p>
@@ -86,20 +115,41 @@
 <!-- Bootstrap Modal -->
 <ng-template #content let-modal>
     <div class="modal-header">
-      <h5 class="modal-title">Appointment Details</h5>
-      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        <h5 class="modal-title">Appointment Details</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-      <p><strong>Patient Name:</strong> {{ selectedAppointment?.patientName }}</p>
-      <p><strong>Doctor:</strong> {{ selectedAppointment?.doctorName }}</p>
-      <p><strong>Department:</strong> {{ selectedAppointment?.departmentName }}</p>
-      <p><strong>Date:</strong> {{ selectedAppointment?.date }}</p>
-      <p><strong>Time Slot:</strong> {{ selectedAppointment?.timeSlot }}</p>
-      <p><strong>Reason:</strong> {{ selectedAppointment?.reason }}</p>
-      <p><strong>Medical Report:</strong> {{ selectedAppointment?.medicalReport }}</p>
-      <p><strong>Status:</strong> {{ selectedAppointment?.status }}</p>
+        <p><strong>Patient Name:</strong> {{ selectedAppointment?.patientName }}</p>
+        <p><strong>Doctor:</strong> {{ selectedAppointment?.doctorName }}</p>
+        <p>
+            <strong>Department:</strong> {{ selectedAppointment?.departmentName }}
+        </p>
+        <p><strong>Date:</strong> {{ selectedAppointment?.date }}</p>
+        <p><strong>Time Slot:</strong> {{ selectedAppointment?.timeSlot }}</p>
+        <p><strong>Reason:</strong> {{ selectedAppointment?.reason }}</p>
+        <p>
+            <strong>Medical Report:</strong> {{ selectedAppointment?.medicalReport }}
+        </p>
+        <p><strong>Status:</strong> {{ selectedAppointment?.status }}</p>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="modal.close()">Close</button>
+        <button class="btn btn-secondary" (click)="modal.close()">Close</button>
     </div>
-  </ng-template>
+</ng-template>
+
+<!-- Confirmation Modal -->
+<ng-template #confirmModal let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Confirm Cancellation</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <p>Are you sure you want to cancel this appointment?</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger" (click)="confirmDelete(modal)">
+            Yes, Cancel
+        </button>
+        <button class="btn btn-secondary" (click)="modal.dismiss()">No</button>
+    </div>
+</ng-template>

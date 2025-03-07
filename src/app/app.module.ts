@@ -6,17 +6,19 @@ import { AppComponent } from './app.component';
 import { LoginFormComponent } from './Components/login-form/login-form.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { authInterceptor } from './auth.interceptor';
+import { authInterceptor } from './Shared/auth.interceptor';
 import { ProfileComponent } from './Components/profile/profile.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { HeaderComponent } from './Components/header/header.component';
 import { FooterComponent } from './Components/footer/footer.component';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbToast } from '@ng-bootstrap/ng-bootstrap';
 import { AppointmentsComponent } from './Components/appointments/appointments.component';
 import { RegisterFormComponent } from './Components/register-form/register-form.component';
 import { AppointmentFormComponent } from './Components/appointment-form/appointment-form.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { UsersComponent } from './Components/users/users.component';
+import { TimeFormatPipe } from './Shared/time-format.pipe';
+import { ToastrModule } from 'ngx-toastr';
 import { LeaveComponent } from './Components/leave/leave.component';
 
 
@@ -32,6 +34,7 @@ import { LeaveComponent } from './Components/leave/leave.component';
     AppointmentFormComponent,
     UsersComponent,
     LeaveComponent,
+    TimeFormatPipe,
     
 
   ],
@@ -43,8 +46,14 @@ import { LeaveComponent } from './Components/leave/leave.component';
     BrowserModule,
     ReactiveFormsModule,
     NgbModule,
-    NgxPaginationModule
+    NgxPaginationModule,
+    ToastrModule.forRoot({
+      positionClass: 'toast-top-right', // You can change position
+      timeOut: 3000, // Auto close time (milliseconds)
+      preventDuplicates: true, // Avoid duplicate toasts
+    })
   ],
+  
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: authInterceptor, multi: true },
     provideAnimationsAsync(), 

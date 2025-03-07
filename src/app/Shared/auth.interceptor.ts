@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { AuthenticationService } from './Services/authentication.service';
+import { AuthenticationService } from '../Services/authentication.service';
 
 @Injectable()
 export class authInterceptor implements HttpInterceptor {
@@ -29,6 +29,7 @@ export class authInterceptor implements HttpInterceptor {
 
   catchError(error: HttpErrorResponse): Observable<HttpEvent<any>> {
     if (error.status === 401) {
+      
       localStorage.setItem('redirectUrl', this.router.url);
     }
 

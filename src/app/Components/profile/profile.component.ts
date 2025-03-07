@@ -3,6 +3,7 @@ import { ApiService } from '../../Services/api.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { JsonPipe } from '@angular/common';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -14,6 +15,7 @@ data:any;
 profileForm!: FormGroup;
 isLoading = false;
 errorMessage: string | null = null;
+
 role: string = localStorage.getItem('role') ?? 'ROLE_PATIENT';  // Default to 'ROLE_PATIENT'
 roles = [
   { label: 'patient', value: 'ROLE_PATIENT' },
@@ -45,6 +47,7 @@ constructor(private apiService: ApiService,private fb: FormBuilder,private route
         console.log(response);
         this.data=response;
         this.initForm(this.data.roleName);
+
       },
       error: (error) => {
         console.log(error);
@@ -85,4 +88,5 @@ constructor(private apiService: ApiService,private fb: FormBuilder,private route
       alert("Please fill all required fields before submitting.");
     }
   }
+  
 }
