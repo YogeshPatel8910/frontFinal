@@ -21,6 +21,8 @@ import { TimeFormatPipe } from './Shared/time-format.pipe';
 import { LeaveComponent } from './Components/leave/leave.component';
 import { BranchComponent } from './Components/branch/branch.component';
 import { DepartmentComponent } from './Components/department/department.component';
+import { ToastrModule } from 'ngx-toastr';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @NgModule({
@@ -50,6 +52,12 @@ import { DepartmentComponent } from './Components/department/department.componen
     ReactiveFormsModule,
     NgbModule,
     NgxPaginationModule,
+    NgSelectModule,
+    ToastrModule.forRoot({ // Toastr global configuration
+      timeOut: 3000, // 3 seconds
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+    }),
   ],
   
   providers: [

@@ -16,14 +16,7 @@
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-10 mt-2" *ngFor="
-              let appointment of appointments
-                | paginate
-                  : {
-                      itemsPerPage: itemsPerPage,
-                      currentPage: currentPage,
-                      totalItems: totalElements
-                    }
-            ">
+              let appointment of appointments | paginate : {itemsPerPage: itemsPerPage,currentPage: currentPage,totalItems: totalElements}">
                         <div class="card appointment-card shadow-sm clickable-card"
                             style="background-color: rgba(202, 27, 27, 0.096)"
                             [ngClass]="getStatusClasses(appointment.status)" (click)="openModal(content, appointment)">

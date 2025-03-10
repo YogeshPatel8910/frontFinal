@@ -1,80 +1,162 @@
 <app-header></app-header>
 <div class="container mt-4">
-    <!-- <div class="d-flex justify-content-end">
-        <button class="btn btn-primary ms-auto" (click)="sortByName()">
-            Sort by Name
+  <!-- Header Section with Search and Add Button -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Search branches..." 
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="search()">
+        <button class="btn btn-outline-secondary" type="button" (click)="search()">
+          <i class="bi bi-search"></i> Search
         </button>
-    </div> -->
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDepartmentModal">
-        Add Department
+        <button class="btn btn-outline-secondary" type="button" *ngIf="searchTerm" (click)="clearSearch()">
+          <i class="bi bi-x"></i> Clear
+        </button>
+      </div>
+    </div>
+    <div class="col-md-6 text-end">
+      <button type="button" class="btn btn-success" (click)="openCreateModal(createBranchModal)">
+        <i class="bi bi-plus-circle"></i> Add Branch
       </button>
-  <div class="container-fluid border border-top-0">
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th *ngFor="let column of columnTable ">
-              {{ column | titlecase }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let user of data | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalElements }">
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="text-center my-4" *ngIf="loading">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-light">
+            <tr>
+              <th *ngFor="let column of columnTable" (click)="sortBy(column)" style="cursor: pointer">
+                {{ column | titlecase }}
+                <i *ngIf="sortColumn === column" 
+                   [class]="sortDirection === 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i>
+              </th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let branch of data | paginate : {itemsPerPage: itemsPerPage,currentPage: currentPage,totalItems: totalElements}">
               <td *ngFor="let column of columnTable">
-                <ng-template #normalValue>
-                  {{ user[column] ? user[column] : "N/A" }}
-                </ng-template>
+                {{ branch[column] }}
               </td>
-              <!-- Delete Button (Click to Show Popup) -->
-              <td class="text-end">
-                <button class="btn btn-sm btn-danger" (click)="showDeletePopup(user.id, $event)">🗑</button>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-primary me-2">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="openDeleteConfirmation(deleteConfirmationModal, branch.id)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="data.length === 0 && !loading">
+              <td [colSpan]="columnTable.length + 1" class="text-center py-4">
+                <div class="text-muted">
+                  <i class="bi bi-info-circle me-2"></i>No branches found
+                </div>
               </td>
             </tr>
           </tbody>
-          
-      </table>
+        </table>
+      </div>
     </div>
-  </div>
-  <div class="d-flex justify-content-between align-items-center">
-    <pagination-controls (pageChange)="onPageChange($event)" class="mt-3 d-flex justify-content-center">
-    </pagination-controls>
-  </div>
-</div>
-<!-- <div *ngIf="popupUserId" class="delete-popup">
-  <p>Are you sure?</p>
-  <button class="btn btn-sm btn-danger" (click)="deleteUser(popupUserId)">Yes</button>
-  <button class="btn btn-sm btn-secondary" (click)="popupUserId = null">No</button>
-</div> --><!-- Button to Open Modal -->
-  
-  <!-- Modal -->
-  <div class="modal fade" id="createDepartmentModal" tabindex="-1" aria-labelledby="createDepartmentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="createDepartmentModalLabel">Create Department</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="card-footer bg-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="text-muted small">
+          Showing {{ data.length ? (currentPage - 1) * itemsPerPage + 1 : 0 }} to 
+          {{ calculateLastItemIndex() }} of {{ totalElements }} branches
         </div>
-        
-        <div class="modal-body">
-          <form [formGroup]="branchForm" >
-            <div class="mb-3">
-              <label for="name" class="form-label">Department Name</label>
-              <input id="name" formControlName="name" class="form-control" type="text" required />
-            </div>
-            
-            <div class="mb-3">
-              <label for="branchId" class="form-label">Branch</label>
-              <select id="branchId" formControlName="branchId" class="form-control" required>
-                <!-- <option *ngFor="let branch of branches" [value]="branch.id">{{ branch.name }}</option> -->
-              </select>
-            </div>
-            
-            <!-- <button type="submit" class="btn btn-success" [disabled]="departmentForm.invalid">
-              Save
-            </button> -->
-          </form>
-        </div>
+        <pagination-controls 
+          (pageChange)="onPageChange($event)" 
+          class="custom-pagination">
+        </pagination-controls>
       </div>
     </div>
   </div>
-  
+</div>
+
+<!-- Create Branch Modal -->
+<ng-template #createBranchModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Create Branch</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="branchForm">
+      <!-- Branch Name Input -->
+      <div class="mb-3">
+        <label for="branchName" class="form-label">Branch Name*</label>
+        <input 
+          id="branchName" 
+          formControlName="name" 
+          class="form-control" 
+          type="text" 
+          [class.is-invalid]="isInvalid('name')" />
+        <div *ngIf="isInvalid('name')" class="invalid-feedback">
+          <span *ngIf="branchForm.get('name')?.errors?.['required']">Name is required</span>
+          <span *ngIf="branchForm.get('name')?.errors?.['minlength']">Name must be at least 2 characters</span>
+        </div>
+      </div>
+      
+      <!-- Branch Address Input -->
+      <div class="mb-3">
+        <label for="branchAddress" class="form-label">Address*</label>
+        <input 
+          id="branchAddress" 
+          formControlName="address" 
+          class="form-control" 
+          type="text" 
+          [class.is-invalid]="isInvalid('address')" />
+        <div *ngIf="isInvalid('address')" class="invalid-feedback">
+          Address is required
+        </div>
+      </div>
+      
+      <!-- Branch Phone Input -->
+      <div class="mb-3">
+        <label for="branchPhone" class="form-label">Phone*</label>
+        <input 
+          id="branchPhone" 
+          formControlName="phone" 
+          class="form-control" 
+          type="text" 
+          [class.is-invalid]="isInvalid('phone')" />
+        <div *ngIf="isInvalid('phone')" class="invalid-feedback">
+          <span *ngIf="branchForm.get('phone')?.errors?.['required']">Phone is required</span>
+          <span *ngIf="branchForm.get('phone')?.errors?.['pattern']">Please enter a valid phone number</span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="branchForm.invalid" (click)="submitBranch()">Save</button>
+  </div>
+</ng-template>
+
+<!-- Delete Confirmation Modal -->
+<ng-template #deleteConfirmationModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Confirm Delete</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>Are you sure you want to delete this branch? This action cannot be undone.</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-danger" (click)="deleteBranch()">Delete</button>
+  </div>
+</ng-template>
