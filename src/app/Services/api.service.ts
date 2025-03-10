@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl1 = 'http://192.168.0.72:8081/api/';
+  private apiUrl1 = 'http://localhost:8081/api/';
   constructor(private http: HttpClient,private authService:AuthenticationService) {}
   
   getData() {
@@ -51,5 +51,10 @@ export class ApiService {
   getLeave(){
     return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/leave`)
   }
-
+  getBranch(page: number, size: number):any{
+    return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/branch?&page=${page}&size=${size}`);
+  }
+  getDepartment(page: number, size: number):any{
+    return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/department?&page=${page}&size=${size}`);
+  }
 }

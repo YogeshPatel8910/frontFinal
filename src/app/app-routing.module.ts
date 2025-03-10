@@ -7,6 +7,8 @@ import { AppointmentsComponent } from './Components/appointments/appointments.co
 import { RegisterFormComponent } from './Components/register-form/register-form.component';
 import { UsersComponent } from './Components/users/users.component';
 import { LeaveComponent } from './Components/leave/leave.component';
+import { BranchComponent } from './Components/branch/branch.component';
+import { DepartmentComponent } from './Components/department/department.component';
 
 const routes: Routes = [
   {path: 'login', component: LoginFormComponent},
@@ -15,6 +17,8 @@ const routes: Routes = [
   {path:'appointment',component:AppointmentsComponent,canActivate:[authGuard]},
   {path:'leave',component:LeaveComponent,canActivate:[authGuard]},
   {path:'users',component:UsersComponent,canActivate:[authGuard]},
+  {path:'branch',component:BranchComponent,canActivate:[authGuard]},
+  {path:'department',component:DepartmentComponent,canActivate:[authGuard]},
   { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];
 

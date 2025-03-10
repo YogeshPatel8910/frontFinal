@@ -18,8 +18,9 @@ import { AppointmentFormComponent } from './Components/appointment-form/appointm
 import { NgxPaginationModule } from 'ngx-pagination';
 import { UsersComponent } from './Components/users/users.component';
 import { TimeFormatPipe } from './Shared/time-format.pipe';
-import { ToastrModule } from 'ngx-toastr';
 import { LeaveComponent } from './Components/leave/leave.component';
+import { BranchComponent } from './Components/branch/branch.component';
+import { DepartmentComponent } from './Components/department/department.component';
 
 
 @NgModule({
@@ -35,6 +36,8 @@ import { LeaveComponent } from './Components/leave/leave.component';
     UsersComponent,
     LeaveComponent,
     TimeFormatPipe,
+    BranchComponent,
+    DepartmentComponent,
     
 
   ],
@@ -47,11 +50,6 @@ import { LeaveComponent } from './Components/leave/leave.component';
     ReactiveFormsModule,
     NgbModule,
     NgxPaginationModule,
-    ToastrModule.forRoot({
-      positionClass: 'toast-top-right', // You can change position
-      timeOut: 3000, // Auto close time (milliseconds)
-      preventDuplicates: true, // Avoid duplicate toasts
-    })
   ],
   
   providers: [

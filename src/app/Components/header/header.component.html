@@ -10,6 +10,8 @@
           <li><a *ngIf="(role==='admin')" routerLink="/users" class="nav-link px-2 link-dark">Users</a></li>
           <li><a *ngIf="(role==='doctor')" routerLink="/leave" class="nav-link px-2 link-dark">Leave</a></li>
           <li><a routerLink="/appointment" class="nav-link px-2 link-dark">Appointments</a></li>
+          <li><a *ngIf="(role==='admin')" routerLink="/branch" class="nav-link px-2 link-dark">Branch</a></li>
+          <li><a *ngIf="(role==='admin')" routerLink="/department" class="nav-link px-2 link-dark">Department</a></li>
         </ul>
 
         <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
