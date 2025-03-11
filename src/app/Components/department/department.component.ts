@@ -164,14 +164,14 @@ export class DepartmentComponent implements OnInit {
     this.currentDepartmentId = department.id;
     
     // Convert branch names to array if it's a string
-    let branchNames = department['branchName'];
-    if (typeof branchNames === 'string') {
-      branchNames = branchNames.split(',').map(name => name.trim());
+    let branchName = department['branchName'];
+    if (typeof branchName === 'string') {
+      branchName = branchName.split(',').map(name => name.trim());
     }
     
     this.departmentForm.patchValue({
       name: department.name,
-      branchNames: branchNames
+      branchNames: branchName
     });
     
     this.modalService.open(content, { centered: true });

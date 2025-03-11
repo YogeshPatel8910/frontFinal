@@ -6,8 +6,7 @@ import { Component } from '@angular/core';
   styleUrl: './header.component.css'
 })
 export class HeaderComponent {
-  role:string='';
-  constructor(){}
+  role:string=''
   ngOnInit() {
     this.role = localStorage.getItem('role') || '';
   }

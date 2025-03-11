@@ -23,6 +23,7 @@ import { BranchComponent } from './Components/branch/branch.component';
 import { DepartmentComponent } from './Components/department/department.component';
 import { ToastrModule } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { MedicalReportFormComponent } from './Components/medical-report-form/medical-report-form.component';
 
 
 @NgModule({
@@ -40,6 +41,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     TimeFormatPipe,
     BranchComponent,
     DepartmentComponent,
+    MedicalReportFormComponent,
     
 
   ],

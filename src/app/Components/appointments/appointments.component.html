@@ -61,7 +61,7 @@
                       " class="btn btn-sm btn-outline-primary" (click)="onReschedule($event, appointment)">
                                             🔄 Reschedule
                                         </button>
-                                        <button *ngIf="role === 'doctor'" class="btn btn-sm btn-outline-secondary">
+                                        <button *ngIf="role === 'doctor'" class="btn btn-sm btn-outline-secondary" (click)="createMedicalReport($event)">
                                             📄 Report
                                         </button>
                                     </div>
@@ -100,7 +100,28 @@
             </div>
         </div>
     </div>
-
+ <!-- MedicalReport Form Popup -->
+ <!-- <div *ngIf="showForm" class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5)" tabindex="-1"
+ aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+     <div class="modal-content">
+         <div class="modal-header">
+             <h3>
+                 {{
+                 isRescheduleMode
+                 ? "Reschedule Appointment"
+                 : "Book an Appointment"
+                 }}
+             </h3>
+             <button type="button" class="btn-close custom-close" (click)="toggleForm()"></button>
+         </div>
+         <div class="modal-body p-4 position-relative">
+             <app-medical-report-form
+                 (closeForm)="toggleForm()"></app-medical-report-form>
+         </div>
+     </div>
+ </div>
+</div> -->
     <ng-template #noAppointments>
         <p>No appointments available.</p>
     </ng-template>

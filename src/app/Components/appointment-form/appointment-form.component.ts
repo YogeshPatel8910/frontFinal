@@ -110,6 +110,8 @@ export class AppointmentFormComponent implements OnInit {
   loadAppointmentData() {
     this.apiService.getAppointmentData().subscribe({
       next: (response: any) => {
+        console.log(response);
+        
         response[1].forEach((r1: any) => {
           this.result[r1.name] = {};
           response[2].forEach((r2: any) => {

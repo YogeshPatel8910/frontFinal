@@ -1,60 +1,431 @@
 <app-header></app-header>
-<div class="container mt-4">
-  <!-- <div class="d-flex justify-content-end">
-    <button class="btn btn-primary ms-auto" (click)="sortByName()">
-      Sort by Name
-    </button>
-  </div> -->
-  <div class="container-fluid p-0">
-    <!-- Role Filter (Tabs) -->
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="selectedRole === 'all'" (click)="filterByRole('all')">All Users</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="selectedRole === 'Patient'" (click)="filterByRole('Patient')">Patients</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" [class.active]="selectedRole === 'Doctor'" (click)="filterByRole('Doctor')">Doctors</a>
-      </li>
-    </ul>
-  </div>
-  <div class="container-fluid border border-top-0">
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th *ngFor="let column of tableColumns[selectedRole]">
-              {{ column | titlecase }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of users | paginate: {itemsPerPage:itemsPerPage , currentPage: currentPage, totalItems:totalElements }" >
-            <td *ngFor="let column of tableColumns[selectedRole]">
-              <ng-container *ngIf="
-                  column === 'updatedAt' || column === 'createdAt';
-                  else normalValue
-                ">
-                {{ user[column] | date : "ddMMyy HHmmss" }}
-              </ng-container>
-              <ng-template #normalValue>
-                {{ user[column] ? user[column] : "N/A" }}
-              </ng-template>
-            </td>
+<div class="dashboard-container">
+  <div class="card main-card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="mb-0 fw-semibold">User Management</h4>
+          <p class="text-muted small mb-0">Manage and monitor system users</p>
+        </div>
+        <div class="d-flex gap-2">
+          <div class="input-group search-container">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              type="text" 
+              class="form-control border-start-0 ps-0" 
+              placeholder="Search users..." 
+              [(ngModel)]="filterText"
+            >
+          </div>
+          <button class="btn btn-outline-primary" title="Refresh data" (click)="refreshData()">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+          <button class="btn btn-outline-primary" title="Export to CSV" (click)="exportToCSV()">
+            <i class="bi bi-download me-1 d-none d-md-inline-block"></i>
+            <span class="d-none d-md-inline-block"></span>
+          </button>
+          <button class="btn btn-primary" (click)="sortBy('name')">
+            <i class="bi" [ngClass]="{'bi-sort-alpha-down': sortAscending, 'bi-sort-alpha-up': !sortAscending}"></i>
+            <span class="ms-1 d-none d-md-inline"></span>
+          </button>
+          <button class="btn btn-primary">
+            <i class="fa fa-user-plus"></i>
+            <span class="ms-1 d-none d-md-inline"></span>
+          </button>
           
-          </tr>
-        </tbody>
-      </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Role Filter (Tabs) -->
+      <div class="tabs-container">
+        <ul class="nav nav-tabs nav-fill">
+          <li class="nav-item">
+            <a class="nav-link" [ngClass]="{'active': selectedRole === 'all'}" (click)="filterByRole('all')">
+              <i class="bi bi-people me-1"></i> All Users
+              <span *ngIf="selectedRole==='all'" class="badge bg-light text-dark ms-1">{{totalElements}}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [ngClass]="{'active': selectedRole === 'Patient'}" (click)="filterByRole('Patient')">
+              <i class="bi bi-person me-1"></i> Patients
+              <span *ngIf="selectedRole==='Patient'" class="badge bg-light text-dark ms-1">{{totalElements}}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [ngClass]="{'active': selectedRole === 'Doctor'}" (click)="filterByRole('Doctor')">
+              <i class="bi bi-person-badge me-1"></i> Doctors
+              <span *ngIf="selectedRole==='Doctor'" class="badge bg-light text-dark ms-1">{{totalElements}}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Loading indicator -->
+      <div *ngIf="isLoading" class="text-center my-5 py-5">
+        <div class="spinner">
+          <div class="spinner-border spinner-border-lg text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="mt-3 text-muted">Loading users data...</div>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <div *ngIf="errorMessage" class="alert alert-danger mx-4 mt-4 d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ errorMessage }}
+        <button class="btn-close ms-auto" (click)="errorMessage = null"></button>
+      </div>
+
+      <!-- Table container -->
+      <div class="table-responsive table-container" *ngIf="!isLoading && users.length > 0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th *ngFor="let column of tableColumns[selectedRole]" 
+                  class="px-3 py-3" 
+                  (click)="sortBy(column)" 
+                  [ngClass]="{'active-sort': sortField === column}">
+                <div class="d-flex align-items-center">
+                  <span>{{ formatColumnHeader(column) }}</span>
+                  <i *ngIf="sortField === column" class="bi ms-1" 
+                    [ngClass]="{'bi-caret-up-fill': sortAscending, 'bi-caret-down-fill': !sortAscending}"></i>
+                </div>
+              </th>
+              <th class="px-3 py-3 text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users; let even = even" 
+                [ngClass]="{'table-row-alt': even}"
+                (click)="openUserDetails(user)"
+                class="user-row">
+              <td *ngFor="let column of tableColumns[selectedRole]" class="px-3 py-3 align-middle">
+                <ng-container *ngIf="column === 'updatedAt' || column === 'createdAt'; else normalValue">
+                  <span class="text-muted small">{{ user[column] | date : "MMM dd, yyyy • HH:mm" }}</span>
+                </ng-container>
+                <ng-template #normalValue>
+                  <ng-container [ngSwitch]="column">
+                    <div *ngSwitchCase="'id'" class="id-cell">
+                      <span class="id-text">
+                        {{ (user[column]?.toString() || '') | slice:0:8 }}{{ user[column] ? '' : '' }}
+                      </span>
+                    </div>
+                    <div *ngSwitchCase="'name'" class="name-cell">
+                      <span class="fw-medium">{{ user[column] || "N/A" }}</span>
+                    </div>
+                    <div *ngSwitchCase="'email'" class="email-cell">
+                      <i class="bi bi-envelope-fill text-muted me-1 small"></i>
+                      <span class="text-primary">{{ user[column] || "N/A" }}</span>
+                    </div>
+                    <div *ngSwitchCase="'mobileNo'" class="phone-cell">
+                      <i class="bi bi-telephone-fill text-muted me-1 small"></i>
+                      <span>{{ user[column] || "N/A" }}</span>
+                    </div>
+                    <div *ngSwitchCase="'roleName'" class="role-cell">
+                      <span class="role-badge" 
+                        [ngClass]="{
+                          'role-doctor': user[column] === 'ROLE_DOCTOR',
+                          'role-patient': user[column] === 'ROLE_PATIENT',
+                          'role-admin': user[column] === 'ROLE_ADMIN'
+                        }">
+                        {{ user[column]?.replace('ROLE_', '') || "N/A" }}
+                      </span>
+                    </div>
+                    <div *ngSwitchCase="'specialization'" class="spec-cell">
+                      <span class="badge bg-light text-dark">{{ user[column] || "N/A" }}</span>
+                    </div>
+                    <div *ngSwitchCase="'age'" class="age-cell">
+                      {{ user[column] ? user[column] + ' years' : "N/A" }}
+                    </div>
+                    <div *ngSwitchCase="'gender'" class="gender-cell">
+                      <i class="bi" [ngClass]="{'bi-gender-male text-primary': user[column] === 'Male', 'bi-gender-female text-danger': user[column] === 'Female'}"></i>
+                      {{ user[column] || "N/A" }}
+                    </div>
+                    <div *ngSwitchCase="'appointment'" class="appointment-cell">
+                      <i class="bi bi-calendar-event text-success me-1" *ngIf="user[column]"></i>
+                      {{ user[column] || "No appointment" }}
+                    </div>
+                    <div *ngSwitchCase="'medicalReport'" class="report-cell">
+                      <span class="badge bg-info text-white" *ngIf="user[column]">Available</span>
+                      <span class="badge bg-light text-muted" *ngIf="!user[column]">None</span>
+                    </div>
+                    <div *ngSwitchDefault>{{ user[column] || "N/A" }}</div>
+                  </ng-container>
+                </ng-template>
+              </td>
+              <td class="px-3 py-3 text-end actions-cell" (click)="$event.stopPropagation()">
+                <div class="action-buttons">
+                  <button type="button" class="btn btn-sm btn-icon btn-light" 
+                          title="View Details" 
+                          (click)="openUserDetails(user)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-icon btn-light" 
+                          title="Edit User">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-icon btn-light text-danger" 
+                          (click)="openDeletePopup(user.id)" 
+                          title="Delete User">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state message -->
+      <div *ngIf="users.length === 0 && !isLoading" class="empty-state">
+        <div class="empty-state-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <h5>No Users Found</h5>
+        <p class="text-muted mb-0">No users matching the selected criteria.</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-footer d-flex justify-content-between align-items-center py-3" *ngIf="totalElements > 0">
+      <div class="text-muted small">
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+        {{ currentPage * itemsPerPage > totalElements ? totalElements : currentPage * itemsPerPage }} 
+        of {{ totalElements }} entries
+      </div>
+      <pagination-controls 
+        (pageChange)="onPageChange($event)"
+        previousLabel="Prev"
+        nextLabel="Next"
+        screenReaderPaginationLabel="Pagination"
+        screenReaderPageLabel="page"
+        screenReaderCurrentLabel="You're on page">
+      </pagination-controls>
     </div>
   </div>
-  <div class="d-flex justify-content-between align-items-center">
-    <pagination-controls (pageChange)="onPageChange($event)" class="mt-3 d-flex justify-content-center">
-    </pagination-controls>
+</div>
+
+<!-- Delete confirmation modal -->
+<div *ngIf="popupUserId" class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-semibold">Delete User</h5>
+        <button type="button" class="btn-close" (click)="closePopup()"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+          This action cannot be undone.
+        </div>
+        <p class="mb-0">Are you sure you want to delete this user? This will permanently remove their account and all associated data from the system.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary" (click)="closePopup()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger" [disabled]="isLoading" (click)="deleteUser()">
+          <i class="bi bi-trash me-1"></i> 
+          <span *ngIf="!isLoading">Delete User</span>
+          <span *ngIf="isLoading">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Deleting...
+          </span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
-<div *ngIf="popupUserId" class="delete-popup">
-  <p>Are you sure?</p>
-  <button class="btn btn-sm btn-danger" (click)="deleteUser(popupUserId)">Yes</button>
-  <button class="btn btn-sm btn-secondary" (click)="popupUserId = null">No</button>
+
+<div *ngIf="popupUserId" class="modal-backdrop fade show"></div> <!-- First backdrop -->
+<div *ngIf="selectedUser" class="modal-backdrop fade show"></div> <!-- Second backdrop -->
+
+<div *ngIf="selectedUser" class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-semibold">
+          <i class="bi bi-person-badge me-2"></i>
+          User Profile: {{selectedUser.name}}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body pt-4 pb-3">
+        <div class="row">
+          <div class="col-md-4 text-center mb-4 mb-md-0">
+            <!-- User Avatar and Role -->
+            <div class="avatar-container mb-3">
+              <div class="user-avatar">
+                <i class="bi" [ngClass]="{
+                  'bi-person-fill': selectedUser.roleName === 'ROLE_PATIENT',
+                  'bi-person-badge-fill': selectedUser.roleName === 'ROLE_DOCTOR',
+                  'bi-person-gear-fill': selectedUser.roleName === 'ROLE_ADMIN'
+                }"></i>
+              </div>
+            </div>
+            <span class="role-badge d-inline-block mb-2" 
+              [ngClass]="{
+                'role-doctor': selectedUser.roleName === 'ROLE_DOCTOR',
+                'role-patient': selectedUser.roleName === 'ROLE_PATIENT',
+                'role-admin': selectedUser.roleName === 'ROLE_ADMIN'
+              }">
+              {{ selectedUser.roleName?.replace('ROLE_', '') || "N/A" }}
+            </span>
+            <div class="user-id small text-muted">
+              ID: {{selectedUser.id}}
+            </div>
+          </div>
+          
+          <div class="col-md-8">
+            <!-- User Details in Cards -->
+            <div class="detail-section mb-3">
+              <h6 class="detail-heading">Contact Information</h6>
+              <div class="card detail-card">
+                <div class="card-body p-3">
+                  <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Email:</div>
+                    <div class="col-sm-8">
+                      <i class="bi bi-envelope me-2 text-primary"></i>
+                      {{selectedUser.email || 'N/A'}}
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Phone:</div>
+                    <div class="col-sm-8">
+                      <i class="bi bi-telephone me-2 text-primary"></i>
+                      {{selectedUser.mobileNo || 'N/A'}}
+                    </div>
+                  </div>
+                  <div *ngIf="selectedUser.address" class="row">
+                    <div class="col-sm-4 text-muted">Address:</div>
+                    <div class="col-sm-8">
+                      <i class="bi bi-geo-alt me-2 text-primary"></i>
+                      {{selectedUser.address}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Role-specific Details -->
+            <ng-container [ngSwitch]="selectedUser.roleName">
+              <!-- Patient-specific fields -->
+              <div *ngSwitchCase="'ROLE_PATIENT'" class="detail-section mb-3">
+                <h6 class="detail-heading">Patient Information</h6>
+                <div class="card detail-card">
+                  <div class="card-body p-3">
+                    <div class="row mb-2" *ngIf="selectedUser.age">
+                      <div class="col-sm-4 text-muted">Age:</div>
+                      <div class="col-sm-8">{{selectedUser.age}} years</div>
+                    </div>
+                    <div class="row mb-2" *ngIf="selectedUser.gender">
+                      <div class="col-sm-4 text-muted">Gender:</div>
+                      <div class="col-sm-8">{{selectedUser.gender}}</div>
+                    </div>
+                    <div class="row mb-2" *ngIf="selectedUser.appointment">
+                      <div class="col-sm-4 text-muted">Appointment:</div>
+                      <div class="col-sm-8">{{selectedUser.appointment}}</div>
+                    </div>
+                    <div class="row" *ngIf="selectedUser.medicalReport">
+                      <div class="col-sm-4 text-muted">Medical Report:</div>
+                      <div class="col-sm-8">
+                        <button class="btn btn-sm btn-outline-primary">
+                          <i class="bi bi-file-earmark-text me-1"></i> View Report
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Doctor-specific fields -->
+              <div *ngSwitchCase="'ROLE_DOCTOR'" class="detail-section mb-3">
+                <h6 class="detail-heading">Doctor Information</h6>
+                <div class="card detail-card">
+                  <div class="card-body p-3">
+                    <div class="row mb-2" *ngIf="selectedUser.specialization">
+                      <div class="col-sm-4 text-muted">Specialization:</div>
+                      <div class="col-sm-8">{{selectedUser.specialization}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+            
+            <!-- System Information -->
+            <div class="detail-section">
+              <h6 class="detail-heading">System Information</h6>
+              <div class="card detail-card">
+                <div class="card-body p-3">
+                  <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Created:</div>
+                    <div class="col-sm-8">
+                      <i class="bi bi-calendar-plus me-2 text-muted"></i>
+                      {{selectedUser.createdAt | date : "MMM dd, yyyy • HH:mm"}}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-4 text-muted">Last Updated:</div>
+                    <div class="col-sm-8">
+                      <i class="bi bi-calendar-check me-2 text-muted"></i>
+                      {{selectedUser.updatedAt | date : "MMM dd, yyyy • HH:mm"}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
+        <button type="button" class="btn btn-primary">
+          <i class="bi bi-pencil-square me-1"></i> Edit User
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Empty state message with better styling -->
+<div *ngIf="users.length === 0 && !isLoading" class="empty-state">
+  <div class="empty-state-icon">
+    <i class="bi" [ngClass]="{
+      'bi-people': selectedRole === 'all',
+      'bi-person': selectedRole === 'Patient',
+      'bi-person-badge': selectedRole === 'Doctor'
+    }"></i>
+  </div>
+  <h5 class="fw-semibold">No {{ selectedRole === 'all' ? 'Users' : selectedRole + 's' }} Found</h5>
+  <p class="text-muted mb-3">No users matching the selected criteria.</p>
+  <button class="btn btn-outline-primary" (click)="loadUsers()">
+    <i class="bi bi-arrow-clockwise me-1"></i> Refresh List
+  </button>
+</div>
+
+<!-- Add this HTML at the bottom of your component template -->
+<div class="toast-container" *ngIf="showToast">
+  <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header" [ngClass]="{
+      'bg-success text-white': toastType === 'success',
+      'bg-danger text-white': toastType === 'error',
+      'bg-info text-white': toastType === 'info'
+    }">
+      <i class="bi me-2" [ngClass]="{
+        'bi-check-circle-fill': toastType === 'success',
+        'bi-exclamation-circle-fill': toastType === 'error',
+        'bi-info-circle-fill': toastType === 'info'
+      }"></i>
+      <strong class="me-auto">{{ toastTitle }}</strong>
+      <button type="button" class="btn-close" (click)="hideToast()" [ngClass]="{'btn-close-white': true}"></button>
+    </div>
+    <div class="toast-body">
+      {{ toastMessage }}
+    </div>
+  </div>
 </div>

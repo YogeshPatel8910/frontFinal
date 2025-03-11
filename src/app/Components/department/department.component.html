@@ -117,17 +117,17 @@
       
       <!-- Multiple Branch Selection -->
       <div class="mb-3">
-        <label for="branchNames" class="form-label">Branches*</label>
+        <label for="branchName" class="form-label">Branches*</label>
         <ng-select
           [items]="branches"
           bindLabel="name"
           bindValue="name"
           [multiple]="true"
           placeholder="Select branches"
-          formControlName="branchNames"
-          [class.is-invalid]="isInvalid('branchNames')">
+          formControlName="branchName"
+          [class.is-invalid]="isInvalid('branchName')">
         </ng-select>
-        <div *ngIf="isInvalid('branchNames')" class="invalid-feedback d-block">
+        <div *ngIf="isInvalid('branchName')" class="invalid-feedback d-block">
           At least one branch must be selected
         </div>
       </div>
@@ -171,10 +171,10 @@
           bindValue="name"
           [multiple]="true"
           placeholder="Select branches"
-          formControlName="branchName"
-          [class.is-invalid]="isInvalid('branchName')">
+          formControlName="branchNames"
+          [class.is-invalid]="isInvalid('branchNames')">
         </ng-select>
-        <div *ngIf="isInvalid('branchName')" class="invalid-feedback d-block">
+        <div *ngIf="isInvalid('branchNames')" class="invalid-feedback d-block">
           At least one branch must be selected
         </div>
       </div>

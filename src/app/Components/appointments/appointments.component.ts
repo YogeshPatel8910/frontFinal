@@ -19,6 +19,7 @@ export class AppointmentsComponent implements OnInit {
   currentPage: number = 1; // Ensure this starts at 1
   itemsPerPage: number = 10;
   totalElements: number = 0;
+  reportForm: boolean=false;
   constructor(
     private apiService: ApiService,
     private router: Router,
@@ -81,6 +82,10 @@ export class AppointmentsComponent implements OnInit {
     this.isRescheduleMode = true; // Enable reschedule mode
     this.showForm = true; // Open the for
 
+  }
+  createMedicalReport(event: Event) {
+    event.stopPropagation();
+    this.reportForm=true;
   }
   onPageChange(event: number) {
     this.currentPage = event;

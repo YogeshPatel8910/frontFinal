@@ -35,13 +35,32 @@ export class ApiService {
     return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/data`);
   }
 
-  getAllUsers(page: number, size: number,user : string | null) {
-    if(!!user)
-      return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}?direction=desc&page=${page}&size=${size}&search=${user}`);
-    else
-      return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}?page=${page}&size=${size}`);
+  getAllUsers(page: number, size: number,user : string | null,direction:string) {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size)
+      .set('direction',direction);
+    
+      if (user) {
+          params = params.set('search', user);
+        }
+      return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}`, { params });
+  }
+  getUserById(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/${id}`);
   }
 
+  // createUser(userData: any): Observable<any> {
+  //   return this.http.post(`${this.apiUrl1}}${localStorage.getItem('role')}/users`, userData);
+  // }
+
+  // updateUser(id: string, userData: any): Observable<any> {
+  //   return this.http.put(`${this.apiUrl1}}${localStorage.getItem('role')}/${id}`, userData);
+  // }
+
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl1}${localStorage.getItem('role')}/${id}`);
+  }
   setLeave(dates : Array<string>){
     return this.http.put(`${this.apiUrl1}${localStorage.getItem('role')}/setLeave`,dates)
   }

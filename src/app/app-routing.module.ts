@@ -19,6 +19,7 @@ const routes: Routes = [
   {path:'users',component:UsersComponent,canActivate:[authGuard]},
   {path:'branch',component:BranchComponent,canActivate:[authGuard]},
   {path:'department',component:DepartmentComponent,canActivate:[authGuard]},
+  {path:'add',component:RegisterFormComponent,canActivate:[authGuard]},
   { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];
 

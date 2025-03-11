@@ -1,0 +1,40 @@
+
+<div class="form-container">
+    <h2>Medical Report Form</h2>
+    <form [formGroup]="medicalForm" (ngSubmit)="submitForm()">
+      <div>
+        <label>Patient ID:</label>
+        <input type="number" formControlName="patientId" required />
+      </div>
+  
+      <div>
+        <label>Doctor ID:</label>
+        <input type="number" formControlName="doctorId" required />
+      </div>
+  
+      <div>
+        <label>Appointment ID:</label>
+        <input type="number" formControlName="appointmentId" required />
+      </div>
+  
+      <div>
+        <label>Symptom:</label>
+        <input type="text" formControlName="symptom" required />
+      </div>
+  
+      <div>
+        <label>Diagnosis:</label>
+        <input type="text" formControlName="diagnosis" required />
+      </div>
+  
+      <div>
+        <label>Notes:</label>
+        <textarea formControlName="notes"></textarea>
+      </div>
+  
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Saving...' : 'Submit' }}
+      </button>
+    </form>
+  </div>
+  
