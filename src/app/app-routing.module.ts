@@ -9,17 +9,20 @@ import { UsersComponent } from './Components/users/users.component';
 import { LeaveComponent } from './Components/leave/leave.component';
 import { BranchComponent } from './Components/branch/branch.component';
 import { DepartmentComponent } from './Components/department/department.component';
+import { DashboardComponent } from './Components/dashboard/dashboard.component';
+import { MedicalReportFormComponent } from './Components/medical-report-form/medical-report-form.component';
 
 const routes: Routes = [
   {path: 'login', component: LoginFormComponent},
   {path:'signup',component:RegisterFormComponent},
-  {path:'profile',component:ProfileComponent,canActivate: [authGuard] },
+  {path:'profile',component:DashboardComponent,canActivate: [authGuard] },
   {path:'appointment',component:AppointmentsComponent,canActivate:[authGuard]},
   {path:'leave',component:LeaveComponent,canActivate:[authGuard]},
   {path:'users',component:UsersComponent,canActivate:[authGuard]},
   {path:'branch',component:BranchComponent,canActivate:[authGuard]},
   {path:'department',component:DepartmentComponent,canActivate:[authGuard]},
   {path:'add',component:RegisterFormComponent,canActivate:[authGuard]},
+  {path:'medico',component:MedicalReportFormComponent},
   { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];
 

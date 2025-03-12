@@ -1,40 +1,177 @@
-
-<div class="form-container">
-    <h2>Medical Report Form</h2>
-    <form [formGroup]="medicalForm" (ngSubmit)="submitForm()">
-      <div>
-        <label>Patient ID:</label>
-        <input type="number" formControlName="patientId" required />
-      </div>
+<div class="container">
+  <h2 class="my-4">Medical Report</h2>
   
-      <div>
-        <label>Doctor ID:</label>
-        <input type="number" formControlName="doctorId" required />
+  <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <label for="patientName" class="form-label">Patient Name</label>
+        <input
+          type="text"
+          id="patientName"
+          formControlName="patientName"
+          class="form-control"
+          [ngClass]="{'is-invalid': submitted && reportForm.get('patientName')?.errors}"
+        >
+        <div *ngIf="submitted && reportForm.get('patientName')?.errors?.['required']" class="invalid-feedback">
+          Patient name is required
+        </div>
       </div>
-  
-      <div>
-        <label>Appointment ID:</label>
-        <input type="number" formControlName="appointmentId" required />
+      
+      <div class="col-md-4 mb-3">
+        <label for="doctorName" class="form-label">Doctor Name</label>
+        <input
+          type="text"
+          id="doctorName"
+          formControlName="doctorName"
+          class="form-control"
+          [ngClass]="{'is-invalid': submitted && reportForm.get('doctorName')?.errors}"
+        >
+        <div *ngIf="submitted && reportForm.get('doctorName')?.errors?.['required']" class="invalid-feedback">
+          Doctor name is required
+        </div>
       </div>
-  
-      <div>
-        <label>Symptom:</label>
-        <input type="text" formControlName="symptom" required />
+      
+      <div class="col-md-4 mb-3">
+        <label for="appointmentId" class="form-label">Appointment ID</label>
+        <input
+          type="text"
+          id="appointmentId"
+          formControlName="appointmentId"
+          class="form-control"
+          [ngClass]="{'is-invalid': submitted && reportForm.get('appointmentId')?.errors}"
+        >
+        <div *ngIf="submitted && reportForm.get('appointmentId')?.errors?.['required']" class="invalid-feedback">
+          Appointment ID is required
+        </div>
+        <div *ngIf="submitted && reportForm.get('appointmentId')?.errors?.['pattern']" class="invalid-feedback">
+          Appointment ID must be a number
+        </div>
       </div>
-  
-      <div>
-        <label>Diagnosis:</label>
-        <input type="text" formControlName="diagnosis" required />
+    </div>
+    
+    <div class="mb-3">
+      <label for="symptom" class="form-label">Symptoms</label>
+      <textarea
+        id="symptom"
+        formControlName="symptom"
+        class="form-control"
+        rows="3"
+        [ngClass]="{'is-invalid': submitted && reportForm.get('symptom')?.errors}"
+      ></textarea>
+      <div *ngIf="submitted && reportForm.get('symptom')?.errors?.['required']" class="invalid-feedback">
+        Symptoms are required
       </div>
-  
-      <div>
-        <label>Notes:</label>
-        <textarea formControlName="notes"></textarea>
+    </div>
+    
+    <div class="mb-3">
+      <label for="diagnosis" class="form-label">Diagnosis</label>
+      <textarea
+        id="diagnosis"
+        formControlName="diagnosis"
+        class="form-control"
+        rows="3"
+        [ngClass]="{'is-invalid': submitted && reportForm.get('diagnosis')?.errors}"
+      ></textarea>
+      <div *ngIf="submitted && reportForm.get('diagnosis')?.errors?.['required']" class="invalid-feedback">
+        Diagnosis is required
       </div>
-  
-      <button type="submit" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Saving...' : 'Submit' }}
+    </div>
+    
+    <div class="mb-4">
+      <label for="notes" class="form-label">Notes</label>
+      <textarea
+        id="notes"
+        formControlName="notes"
+        class="form-control"
+        rows="3"
+      ></textarea>
+    </div>
+    
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Prescriptions</h3>
+        <button type="button" class="btn btn-primary" (click)="addPrescription()">
+          + Add Prescription
+        </button>
+      </div>
+      
+      <div formArrayName="prescriptions">
+        <div *ngFor="let prescription of prescriptions.controls; let i = index" [formGroupName]="i" class="card mb-3 p-3">
+          <div class="d-flex justify-content-between mb-2">
+            <h4 class="card-title">Prescription #{{i + 1}}</h4>
+            <button *ngIf="prescriptions.length > 1" type="button" class="btn btn-danger btn-sm" (click)="removePrescription(i)">
+              Remove
+            </button>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label [for]="'medicationName' + i" class="form-label">Medication Name</label>
+              <input
+                [id]="'medicationName' + i"
+                type="text"
+                formControlName="name"
+                class="form-control"
+                [ngClass]="{'is-invalid': submitted && prescription.get('name')?.errors}"
+              >
+              <div *ngIf="submitted && prescription.get('name')?.errors?.['required']" class="invalid-feedback">
+                Medication name is required
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label [for]="'dosage' + i" class="form-label">Dosage</label>
+              <input
+                [id]="'dosage' + i"
+                type="text"
+                formControlName="dosage"
+                class="form-control"
+                [ngClass]="{'is-invalid': submitted && prescription.get('dosage')?.errors}"
+              >
+              <div *ngIf="submitted && prescription.get('dosage')?.errors?.['required']" class="invalid-feedback">
+                Dosage is required
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label [for]="'duration' + i" class="form-label">Duration</label>
+              <input
+                [id]="'duration' + i"
+                type="text"
+                formControlName="duration"
+                class="form-control"
+                [ngClass]="{'is-invalid': submitted && prescription.get('duration')?.errors}"
+              >
+              <div *ngIf="submitted && prescription.get('duration')?.errors?.['required']" class="invalid-feedback">
+                Duration is required
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label [for]="'instructions' + i" class="form-label">Instructions</label>
+              <textarea
+                [id]="'instructions' + i"
+                formControlName="instructions"
+                class="form-control"
+                rows="2"
+                [ngClass]="{'is-invalid': submitted && prescription.get('instructions')?.errors}"
+              ></textarea>
+              <div *ngIf="submitted && prescription.get('instructions')?.errors?.['required']" class="invalid-feedback">
+                Instructions are required
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="d-flex justify-content-end">
+      <button type="button" class="btn btn-secondary me-2" (click)="resetForm()">
+        Cancel
       </button>
-    </form>
-  </div>
-  
+      <button type="submit" class="btn btn-success">
+        Save Report
+      </button>
+    </div>
+  </form>
+</div>

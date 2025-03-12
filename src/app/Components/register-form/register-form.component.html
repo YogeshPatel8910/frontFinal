@@ -3,7 +3,11 @@
       <div class="col-md-8 col-lg-6 col-xl-5">
         <div class="card shadow-lg border-0 rounded-4">
           <div class="card-body p-4 p-md-5">
-            <h2 class="card-title text-center mb-4 fw-bold">Create Your Account</h2>
+             <!-- Close Button (Visible only when called as a modal) -->
+          <div class="d-flex justify-content-between ">
+            <h2 class="card-title text-center align-items-center mb-4 fw-bold">{{ formHeader }}</h2>
+            <button *ngIf="showCloseButton" class="btn-close" (click)="close()"></button>
+          </div>
             
             <!-- Registration Progress -->
             <div class="mb-4" *ngIf="registerForm.get('roleName')?.value">
@@ -87,9 +91,9 @@
                 <button type="submit" class="btn btn-primary py-2 fw-medium" [disabled]="registerForm.invalid || isLoading">
                   <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                   <i *ngIf="!isLoading" class="bi bi-person-plus-fill me-2"></i>
-                  Create Account
+                  {{!showCloseButton?'Create Account':'Add User'}}
                 </button>
-                <div class="text-center mt-3">
+                <div *ngIf="!showCloseButton" class="text-center mt-3">
                   <p class="mb-0">Already have an account?
                     <a routerLink="/login" class="fw-medium text-decoration-none">Sign In</a>
                   </p>

@@ -24,6 +24,7 @@ import { DepartmentComponent } from './Components/department/department.componen
 import { ToastrModule } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MedicalReportFormComponent } from './Components/medical-report-form/medical-report-form.component';
+import { DashboardComponent } from './Components/dashboard/dashboard.component';
 
 
 @NgModule({
@@ -42,6 +43,7 @@ import { MedicalReportFormComponent } from './Components/medical-report-form/med
     BranchComponent,
     DepartmentComponent,
     MedicalReportFormComponent,
+    DashboardComponent,
     
 
   ],

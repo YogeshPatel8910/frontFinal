@@ -24,6 +24,7 @@ export class AppointmentFormComponent implements OnInit {
   appointmentForm!: FormGroup;
   userRole: string = ''; // Store role from localStorage
   errorMessage: string | null = null;
+  isSubmitting: boolean = false; // Track form submission state
   doctor: string[] = [];
   department: string[] = [];
   branch: string[] = [];
@@ -74,9 +75,13 @@ export class AppointmentFormComponent implements OnInit {
       errors: { required: 'Time Slot is required' },
     },
   };
-  // result: any;
 
   constructor(private fb: FormBuilder, private apiService: ApiService) {}
+
+  get today(): Date {
+    return new Date();
+  }
+
   ngOnInit() {
     // Get role from localStorage
     this.userRole = localStorage.getItem('role') || 'patient'; // Default to 'patient' if not found
@@ -89,6 +94,7 @@ export class AppointmentFormComponent implements OnInit {
       this.populateRescheduleData();
     }
   }
+
   initializeForm() {
     // Get role from localStorage
     this.appointmentForm = this.fb.group({
@@ -99,73 +105,53 @@ export class AppointmentFormComponent implements OnInit {
       this.appointmentForm.addControl(
         key,
         this.fb.control(
-          { value:this.appointmentData?this.appointmentData[key]:'', disabled: this.isRescheduleMode && key !=='date' && key !== 'timeSlot'  }, 
+          { value: this.appointmentData ? this.appointmentData[key] : '', disabled: this.isRescheduleMode && key !== 'date' && key !== 'timeSlot' }, 
           this.fieldConfig[key]?.errors ? Validators.required : []
         )
       );
     }
-
-   
   }
+
   loadAppointmentData() {
     this.apiService.getAppointmentData().subscribe({
       next: (response: any) => {
-        console.log(response);
-        
-        response[1].forEach((r1: any) => {
-          this.result[r1.name] = {};
-          response[2].forEach((r2: any) => {
-            this.result[r1.name][r2.name] = response[0]
-              .filter(
-                (r0: any) =>
-                  r0.departmentName === r2.name && r0.branchName === r1.name
-              )
-              .map((r0: any) => r0.name);
-          });
-        });
-
-        this.branch = Object.keys(this.result);
-        // debugger
+        this.branch = Object.keys(response);
         this.fieldConfig['branchName'].options = this.branch;
         this.appointmentForm.get('branchName')?.valueChanges.subscribe((b) => {
-          this.department = Object.keys(this.result[b]);
+          this.department = Object.keys(response[b]);
           this.fieldConfig['departmentName'].options = this.department;
           this.appointmentForm
             .get('departmentName')
             ?.valueChanges.subscribe((d) => {
-              this.doctor = Object.values(this.result[b][d]);
+              this.doctor = Object.values(response[b][d]);
               this.fieldConfig['doctorName'].options = this.doctor;
             });
         });
       },
+      error: (error) => {
+        this.errorMessage = 'Failed to load appointment data. Please try again.';
+      }
     });
   }
   
-  /* ✅ Populate Reschedule Data (Only When Rescheduling) */
   populateRescheduleData() {
     if (this.appointmentData) {
-      this.fieldConfig['branchName'].options?.push(this.appointmentData.branchName)  ;
-      this.fieldConfig['departmentName'].options?.push(this.appointmentData.departmentName);
-      this.fieldConfig['doctorName'].options?.push(this.appointmentData.doctorName);
-      // this.appointmentForm.patchValue({
-      //   date: this.appointmentData.date || '',
-      //   timeSlot: this.appointmentData.timeSlot || '',
-      //   branchName: this.appointmentData.branchName || '',  // Directly set value
-      //   departmentName: this.appointmentData.departmentName || '',
-      //   doctorName: this.appointmentData.doctorName || '',
-      // });
+      this.fieldConfig['branchName'].options = [this.appointmentData.branchName];
+      this.fieldConfig['departmentName'].options = [this.appointmentData.departmentName];
+      this.fieldConfig['doctorName'].options = [this.appointmentData.doctorName];
     }
   }
   
   onSubmit() {
     if (this.appointmentForm.valid) {
+      this.isSubmitting = true;
       console.log('Appointment Data:', this.appointmentForm.value);
+      
       if (this.isRescheduleMode) {
         this.handleReschedule();
       } else {
         this.handleNewBooking();
       }
-      this.closeForm.emit();
     }
   }
 
@@ -173,10 +159,12 @@ export class AppointmentFormComponent implements OnInit {
     this.apiService.addAppointment(this.appointmentForm.value).subscribe({
       next: (response: any) => {
         console.log('Appointment Booked Successfully', response);
+        this.isSubmitting = false;
         this.closeForm.emit();
       },
       error: (error: { error: { message: string } }) => {
         this.errorMessage = error.error?.message || 'Booking failed!';
+        this.isSubmitting = false;
       }
     });
   }
@@ -184,6 +172,7 @@ export class AppointmentFormComponent implements OnInit {
   handleReschedule() {
     if (!this.appointmentData?.id) {
       this.errorMessage = 'Invalid appointment data!';
+      this.isSubmitting = false;
       return;
     }
 
@@ -193,25 +182,30 @@ export class AppointmentFormComponent implements OnInit {
       timeSlot: this.appointmentForm.value.timeSlot,
     };
 
-      this.apiService.rescheduleAppointment(updatedData.id, updatedData).subscribe({
-        next: (response: any) => {
-          console.log('Rescheduled Successfully', response);
-          this.closeForm.emit();
-        },
-        error: (error: { error: { message: string } }) => {
-          this.errorMessage = error.error?.message || 'Rescheduling failed!';
-        },
-      });
-  
+    this.apiService.rescheduleAppointment(updatedData.id, updatedData).subscribe({
+      next: (response: any) => {
+        console.log('Rescheduled Successfully', response);
+        this.isSubmitting = false;
+        this.closeForm.emit();
+      },
+      error: (error: { error: { message: string } }) => {
+        this.errorMessage = error.error?.message || 'Rescheduling failed!';
+        this.isSubmitting = false;
+      },
+    });
   }
 
   isSameAsOriginal(): boolean {
-    if (this.appointmentData.date != this.appointmentForm.get('date')?.value || this.appointmentData.timeSlot != this.appointmentForm.get('timeSlot')?.value){
-      return false;
-    } 
-    else{
-      return true;
-    }
+    if (!this.appointmentData) return false;
+    
+    const dateValue = this.appointmentForm.get('date')?.value;
+    const timeValue = this.appointmentForm.get('timeSlot')?.value;
+    
+    return this.appointmentData.date === dateValue && 
+           this.appointmentData.timeSlot === timeValue;
   }
   
+  clearError() {
+    this.errorMessage = null;
+  }
 }

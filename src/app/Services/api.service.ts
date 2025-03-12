@@ -30,9 +30,11 @@ export class ApiService {
   rescheduleAppointment(id:number,data:any) {
     return this.http.put(`${this.apiUrl1}${localStorage.getItem('role')}/appointment/${id}/reschedule`,data);
   }
-
-  getAppointmentData(){
-    return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/data`);
+  getRegisterData(): Observable<Record<string, string[]>>{
+    return this.http.get<Record<string, string[]>>(`${this.apiUrl1}auth/data/register`);
+  }
+  getAppointmentData(): Observable<Record<string, Record<string, string[]>>>{
+    return this.http.get<Record<string, Record<string, string[]>>>(`${this.apiUrl1}auth/data/appointment`)
   }
 
   getAllUsers(page: number, size: number,user : string | null,direction:string) {

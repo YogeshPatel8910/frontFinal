@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthenticationService } from '../../Services/authentication.service';
 import { Router } from '@angular/router';
+import { ApiService } from '../../Services/api.service';
 
 @Component({
   selector: 'app-register-form',
@@ -10,8 +11,15 @@ import { Router } from '@angular/router';
 })
 export class RegisterFormComponent implements OnInit {
   registerForm!: FormGroup;
+  @Input() formHeader: string = 'Create Your Account'; // Dynamic form title
+  @Input() showCloseButton: boolean = false; // Controls close button visibility
+  @Output() closeForm = new EventEmitter<void>();
+  // formHeader:string='Create Your Account';
   isLoading = false;
   errorMessage: string | null = null;
+  branches: string[] = []; // Store branch names
+  departments: string[] = []; // Store departments based on selected branch
+  branchDepartmentMap: Record<string, string[]> = {};
   roles = [
     { label: 'Patient', value: 'ROLE_PATIENT' },
     { label: 'Doctor', value: 'ROLE_DOCTOR' },
@@ -121,21 +129,42 @@ export class RegisterFormComponent implements OnInit {
       label: 'Gender',
       icon: 'bi-gender-ambiguous',
       column: 'col-md-6'
+    },
+    branchName: { 
+      type: 'select', 
+      placeholder: 'Select Branch', 
+      validators: [Validators.required], 
+      errors: { required: 'Branch is required' }, 
+      options: [],
+      label: 'Branch Name',
+      icon: 'bi-diagram-3-fill',
+      column: 'col-12'
+    },
+    departmentName: { 
+      type: 'select', 
+      placeholder: 'Select Department', 
+      validators: [Validators.required], 
+      errors: { required: 'Department is required' }, 
+      options: [],
+      label: 'Department Name',
+      icon: 'bi-diagram-3',
+      column: 'col-12'
     }
   };
 
   roleFields: Record<string, string[]> = {
     ROLE_PATIENT: ['name', 'email', 'password', 'confirmPassword', 'mobileNo', 'address', 'age', 'gender'],
-    ROLE_DOCTOR: ['name', 'email', 'password', 'confirmPassword', 'mobileNo', 'specialization'],
+    ROLE_DOCTOR: ['name', 'email', 'password', 'confirmPassword', 'mobileNo', 'branchName', 'departmentName','specialization'],
     ROLE_ADMIN: ['name', 'email', 'password', 'confirmPassword', 'mobileNo']
   };
   role: string = '';
 
-  constructor(private fb: FormBuilder, private authService: AuthenticationService, private router: Router) {}
+  constructor(private fb: FormBuilder, private apiService:ApiService ,private authService: AuthenticationService, private router: Router) {}
 
   ngOnInit() {
     this.role = localStorage.getItem('role') || '';
     this.initForm();
+
   }
 
   initForm() {
@@ -159,6 +188,35 @@ export class RegisterFormComponent implements OnInit {
     this.roleFields[role].forEach(field => {
       this.registerForm.addControl(field, this.fb.control('', this.fieldConfig[field].validators));
     });
+
+    if(role==='ROLE_DOCTOR'){
+      this.fetchBranchDepartmentData();
+    }
+  }
+
+  fetchBranchDepartmentData() {
+    this.apiService.getRegisterData().subscribe({
+      next: (data) => {
+        this.branchDepartmentMap = data; // Store entire mapping
+        this.branches = Object.keys(data); // Extract branches (hospital names)
+        this.fieldConfig['branchName'].options?.push(...this.branches)
+        this.registerForm.get('branchName')?.valueChanges.subscribe((b) => { 
+          this.departments = Object.values(data[b]);
+          this.fieldConfig['departmentName'].options = this.departments;
+        });
+        
+      },
+      error: (err) => {
+        console.error('Error fetching branches and departments:', err);
+      }
+    });
+  }
+
+  onBranchChange(branch: string) {
+    this.departments = this.branchDepartmentMap[branch] ? Object.keys(this.branchDepartmentMap[branch]) : [];
+    this.registerForm.get('departmentName')?.setValue(''); // Reset department selection
+    console.log(this.departments);
+    
   }
 
   onSubmit() {
@@ -179,10 +237,11 @@ export class RegisterFormComponent implements OnInit {
       next: (response: any) => {
         console.log('Registration Successful', response.user);
         this.isLoading = false;
-        this.authService.setAuthToken(response.token);
-        localStorage.setItem('role', response.role);
-        this.authService.setAuthenticated(true);
-        this.router.navigate(['/login']);
+        this.close();
+        if(!localStorage.getItem('role')){
+          this.authService.setAuthenticated(true);
+          this.router.navigate(['/login']);
+        }
       },
       error: (error: { error: { message: string; }; }) => {
         this.errorMessage = error.error?.message || 'Registration failed! Please try again.';
@@ -240,5 +299,8 @@ export class RegisterFormComponent implements OnInit {
       return Math.round((validFields / totalFields) * 100);
     }
     return 100;
+  }
+  close() {
+    this.closeForm.emit(); // Notify parent to close
   }
 }

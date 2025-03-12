@@ -31,7 +31,7 @@ interface Role {
 export class UsersComponent implements OnInit {
   users: User[] = [];
   selectedUser: User | null = null;
-
+  onreg:boolean =false
   tableColumns: Record<string, string[]> = {
     all: ["id", "roleName", "name", "mobileNo", "email", "createdAt", "updatedAt"],
     Patient: ["id", "roleName", "name", "mobileNo", "email", "createdAt", "updatedAt", "address", "age", "gender", "appointment", "medicalReport"],
@@ -186,7 +186,17 @@ export class UsersComponent implements OnInit {
       }
     });
   }
-  
+  openRegistration(){
+    this.onreg=true;
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
+
+  }
+ 
+  closeRegister():void{
+    this.onreg = false; // Hide modal when close button is clicked
+    document.body.style.overflow = "auto"; // Restore scrolling
+    this.loadUsers();
+  }
   closeModal(): void {
     this.selectedUser = null;
     document.body.style.overflow = "auto"; // Restore scrolling

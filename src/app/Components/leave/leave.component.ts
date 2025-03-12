@@ -44,6 +44,8 @@ export class LeaveComponent implements OnInit {
 
     let startDay = firstDayOfMonth.getDay();
     startDay = startDay === 0 ? 6 : startDay - 1;
+    console.log(startDay);
+    
 
     for (let i = 0; i < startDay; i++) {
       this.daysInMonth.push(null);
@@ -53,7 +55,7 @@ export class LeaveComponent implements OnInit {
       const date = new Date(this.currentYear, this.currentMonth, day);
       const dateString = this.getFormattedDate(date);
       const isPast = dateString < this.today;
-      const isPastLeave = this.pastLeaves.includes(dateString);
+      const isPastLeave = this.pastLeaves?.includes(dateString);
 
       this.daysInMonth.push({
         day,
@@ -137,7 +139,7 @@ export class LeaveComponent implements OnInit {
     const currentMonth = today.getMonth() + 1; // Get current month (1-12)
 
     return Array.from(
-      this.pastLeaves.filter((leaveDate) => {
+      this.pastLeaves?.filter((leaveDate) => {
         const leaveDateObj = new Date(leaveDate);
         const leaveMonth = leaveDateObj.getMonth() + 1; // Convert to 1-12 range
 
@@ -163,7 +165,7 @@ export class LeaveComponent implements OnInit {
     }
 
     if(this.selectType==null){
-      if(this.pastLeaves.includes(dateString)){
+      if(this.pastLeaves?.includes(dateString)){
         this.selectType=true;
       }
       else{
@@ -177,7 +179,7 @@ export class LeaveComponent implements OnInit {
       }
     }
     else{
-      if (this.selectedLeaves.size < 4 && (this.selectType == this.pastLeaves.includes(dateString))) {
+      if (this.selectedLeaves.size < 4 && (this.selectType == this.pastLeaves?.includes(dateString))) {
         this.selectedLeaves.add(dateString);
       }
       console.log(Array.from(this.selectedLeaves));
@@ -186,7 +188,7 @@ export class LeaveComponent implements OnInit {
   }
  
   isPastLeaveSelected(): boolean {
-    return Array.from(this.selectedLeaves).some(date => this.pastLeaves.includes(date));
+    return Array.from(this.selectedLeaves).some(date => this.pastLeaves?.includes(date));
   }
   
   toggleDeleteMode(): void {

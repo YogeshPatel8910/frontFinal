@@ -30,7 +30,7 @@
             <i class="bi" [ngClass]="{'bi-sort-alpha-down': sortAscending, 'bi-sort-alpha-up': !sortAscending}"></i>
             <span class="ms-1 d-none d-md-inline"></span>
           </button>
-          <button class="btn btn-primary">
+          <button class="btn btn-primary" (click)="openRegistration()">
             <i class="fa fa-user-plus"></i>
             <span class="ms-1 d-none d-md-inline"></span>
           </button>
@@ -100,7 +100,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of users; let even = even" 
+            <tr *ngFor="let user of users| paginate: { 
+              itemsPerPage: itemsPerPage, 
+              currentPage: currentPage, 
+              totalItems: totalElements }; let even = even" 
                 [ngClass]="{'table-row-alt': even}"
                 (click)="openUserDetails(user)"
                 class="user-row">
@@ -244,6 +247,11 @@
 
 <div *ngIf="popupUserId" class="modal-backdrop fade show"></div> <!-- First backdrop -->
 <div *ngIf="selectedUser" class="modal-backdrop fade show"></div> <!-- Second backdrop -->
+<div *ngIf="onreg" class="modal-backdrop fade show"></div> <!-- third backdrop -->
+<div *ngIf="onreg" class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
+  <app-register-form [formHeader]="'Add User'" [showCloseButton]="true" (closeForm)="closeRegister()"></app-register-form>
+</div>
+
 
 <div *ngIf="selectedUser" class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -251,7 +259,7 @@
       <div class="modal-header border-bottom">
         <h5 class="modal-title fw-semibold">
           <i class="bi bi-person-badge me-2"></i>
-          User Profile: {{selectedUser.name}}
+          User Profile
         </h5>
         <button type="button" class="btn-close" (click)="closeModal()"></button>
       </div>
@@ -277,7 +285,7 @@
               {{ selectedUser.roleName?.replace('ROLE_', '') || "N/A" }}
             </span>
             <div class="user-id small text-muted">
-              ID: {{selectedUser.id}}
+              {{selectedUser.name}}
             </div>
           </div>
           

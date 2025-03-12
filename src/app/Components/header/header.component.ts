@@ -12,6 +12,6 @@ export class HeaderComponent {
   }
 
   logout(){
-    localStorage.removeItem('authToken')
+    localStorage.clear();
   }
 }

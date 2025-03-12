@@ -1,42 +1,84 @@
 <div class="container-fluid">
   <div class="vh-auto">
     <app-header></app-header>
-    <div class=" container-fluid w-50 py-4">
-      
-      <!-- <div *ngFor="let key of dataKeysAll">
-        {{key}}:{{data[key]|json}}
-        <p>qwertyuiop</p>
-        <p></p>
-      </div> -->
-      <form *ngIf="profileForm" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-        
-        <!-- Dynamic Fields -->
-        <div *ngFor="let key of roleFields[data.roleName]" class="mb-3">
-            <label class="form-label">{{ key | titlecase }}</label>
-
-            <!-- Select Input -->
-            <select *ngIf="fieldConfig[key].type === 'select'" class="form-select" [formControlName]="key">
-                <option value="">{{ fieldConfig[key].placeholder }}</option>
-                <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
-            </select>
-
-            <!-- Other Input Types -->
-            <input *ngIf="fieldConfig[key].type !== 'select'" [type]="fieldConfig[key].type" class="form-control"
-                [formControlName]="key" [placeholder]="fieldConfig[key].placeholder" [disabled]="fieldConfig[key].disabled ?? false"
-                [ngClass]="{'is-invalid': profileForm.get(key)?.invalid && profileForm.get(key)?.touched}">
-
-            <!-- Error Messages -->
-            <div *ngIf="profileForm.get(key)?.invalid && profileForm.get(key)?.touched" class="text-danger small">
-                <span *ngFor="let error of fieldConfig[key].errors | keyvalue">
-                    <span *ngIf="profileForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
-                </span>
-            </div>
+    
+    <div class="container-fluid w-50 py-4">
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
         </div>
-        <button type="submit" class="btn btn-primary w-100 mt-3" [disabled]="!(profileForm.valid && isChanged)">
-            Save Changes
-        </button>
+        <p class="mt-2">Loading profile data...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = null"></button>
+      </div>
+
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = null"></button>
+      </div>
+
+      <!-- Profile Form -->
+      <div *ngIf="profileForm && !isLoading" class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h4 class="mb-0">{{ data.roleName | titlecase }} Profile</h4>
+        </div>
         
-    </form>
+        <div class="card-body">
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+            <!-- Dynamic Fields -->
+            <div *ngFor="let key of roleFields[data.roleName]">
+              <!-- Skip password fields if not visible -->
+              <ng-container *ngIf="!(key === 'password' || key === 'confirmPassword') || isPasswordFieldVisible">
+                <div class="mb-3">
+                  <label class="form-label">{{ key | titlecase }}</label>
+                  
+                  <!-- Select Input -->
+                  <select *ngIf="fieldConfig[key].type === 'select'" class="form-select" [formControlName]="key">
+                    <option value="">{{ fieldConfig[key].placeholder }}</option>
+                    <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
+                  </select>
+                  
+                  <!-- Other Input Types -->
+                  <input *ngIf="fieldConfig[key].type !== 'select'" [type]="fieldConfig[key].type" class="form-control"
+                      [formControlName]="key" [placeholder]="fieldConfig[key].placeholder" 
+                      [disabled]="fieldConfig[key].disabled || false"
+                      [ngClass]="{'is-invalid': profileForm.get(key)?.invalid && profileForm.get(key)?.touched}">
+                  
+                  <!-- Error Messages -->
+                  <div *ngIf="profileForm.get(key)?.invalid && profileForm.get(key)?.touched" class="text-danger small mt-1">
+                    <ng-container *ngFor="let error of fieldConfig[key].errors | keyvalue">
+                      <span *ngIf="profileForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
+                    </ng-container>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- Password Toggle Button -->
+            <!-- <div class="mb-3">
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="togglePasswordFields()">
+                {{ isPasswordFieldVisible ? 'Hide Password Fields' : 'Change Password' }}
+              </button>
+            </div> -->
+
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()" [disabled]="!isChanged">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="!isChanged || profileForm.invalid">
+                Save Changes
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
   <app-footer></app-footer>
