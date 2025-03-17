@@ -47,7 +47,7 @@ export class DepartmentComponent implements OnInit {
   ) {
     this.departmentForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      branchNames: [[], [Validators.required, this.atLeastOneSelection]]
+      branchName: [[],[]]
     });
   }
 
@@ -97,6 +97,8 @@ export class DepartmentComponent implements OnInit {
     this.apiService.getBranches().subscribe({
       next: (response: any) => {
         this.branches = response['data'] || [];
+        console.log("branches",this.branches);
+        
       },
       error: (error: any) => {
         this.toastr.error('Failed to load branches', 'Error');
@@ -184,7 +186,7 @@ export class DepartmentComponent implements OnInit {
       // Create request object
       const department = {
         name: formValues.name,
-        branchName: formValues.branchNames
+        branchName: formValues.branchName?formValues.branchName:[]
       };
       
       this.apiService.createDepartment(department).subscribe({
@@ -213,8 +215,6 @@ export class DepartmentComponent implements OnInit {
         name: formValues.name,
         branchName: formValues.branchNames
       };
-      console.log(department);
-      
       this.apiService.updateDepartment(department.id,department).subscribe({
         next: () => {
           this.toastr.success('Department updated successfully', 'Success');

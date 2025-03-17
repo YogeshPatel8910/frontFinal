@@ -28,7 +28,7 @@ export class LeaveComponent implements OnInit {
   initCal(){
     this.apiService.getLeave().subscribe({
       next: (res: any) => {
-        console.log(res);
+        console.log("leave",res);
         this.pastLeaves = res;
         this.generateCalendar();
       },
@@ -41,10 +41,9 @@ export class LeaveComponent implements OnInit {
     this.daysInMonth = [];
     const firstDayOfMonth = new Date(this.currentYear, this.currentMonth, 1);
     const lastDayOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
-
+    
     let startDay = firstDayOfMonth.getDay();
-    startDay = startDay === 0 ? 6 : startDay - 1;
-    console.log(startDay);
+    startDay = startDay === 0 ? 6 : startDay -1;
     
 
     for (let i = 0; i < startDay; i++) {
@@ -52,7 +51,7 @@ export class LeaveComponent implements OnInit {
     }
 
     for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
-      const date = new Date(this.currentYear, this.currentMonth, day);
+      const date = new Date(this.currentYear, this.currentMonth, day+1);
       const dateString = this.getFormattedDate(date);
       const isPast = dateString < this.today;
       const isPastLeave = this.pastLeaves?.includes(dateString);

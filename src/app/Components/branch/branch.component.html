@@ -50,7 +50,13 @@
           <tbody>
             <tr *ngFor="let branch of data | paginate : {itemsPerPage: itemsPerPage,currentPage: currentPage,totalItems: totalElements}">
               <td *ngFor="let column of columnTable">
-                {{ branch[column] }}
+                <!-- {{ branch[column] }} -->
+                <ng-container *ngIf="column === 'departmentName' && branch[column] && branch[column].length > 0; else regularCell">
+                  <span class="badge bg-primary me-1" *ngFor="let branch of branch[column]">{{ branch }}</span>
+                </ng-container>
+                <ng-template #regularCell>
+                  {{ branch[column] ? branch[column] : 'N/A' }}
+                </ng-template>
               </td>
               <td class="text-center">
                 <button class="btn btn-sm btn-outline-primary me-2">
@@ -137,6 +143,18 @@
           <span *ngIf="branchForm.get('phone')?.errors?.['required']">Phone is required</span>
           <span *ngIf="branchForm.get('phone')?.errors?.['pattern']">Please enter a valid phone number</span>
         </div>
+      </div>
+      <!-- Multiple Department Selection -->
+      <div class="mb-3">
+        <label for="branchName" class="form-label">Department</label>
+        <ng-select
+          [items]="departments"
+          bindLabel="name"
+          bindValue="name"
+          [multiple]="true"
+          placeholder="Select Departments"
+          formControlName="departmentName">
+        </ng-select>
       </div>
     </form>
   </div>

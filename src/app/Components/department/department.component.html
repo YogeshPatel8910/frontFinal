@@ -124,12 +124,8 @@
           bindValue="name"
           [multiple]="true"
           placeholder="Select branches"
-          formControlName="branchName"
-          [class.is-invalid]="isInvalid('branchName')">
+          formControlName="branchName">
         </ng-select>
-        <div *ngIf="isInvalid('branchName')" class="invalid-feedback d-block">
-          At least one branch must be selected
-        </div>
       </div>
     </form>
   </div>

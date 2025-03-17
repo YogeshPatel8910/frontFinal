@@ -2,12 +2,17 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AuthenticationService } from './authentication.service';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { MedicalReport } from '../Components/medical-report-form/medical-report-form.component';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl1 = 'http://192.168.0.72:8081/api/';
+  // getBranch(page: number, size: number):any{
+  //   return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/branch?&page=${page}&size=${size}`);
+  // }
+  
+  private apiUrl1 = 'http://localhost:8081/api/';
   constructor(private http: HttpClient,private authService:AuthenticationService) {}
   
   getData() {
@@ -29,6 +34,9 @@ export class ApiService {
   }
   rescheduleAppointment(id:number,data:any) {
     return this.http.put(`${this.apiUrl1}${localStorage.getItem('role')}/appointment/${id}/reschedule`,data);
+  }
+  saveMedicalReport(id:number,medicalReport: MedicalReport) {
+    return this.http.post(`${this.apiUrl1}${localStorage.getItem('role')}/appointment/${id}/report`,medicalReport);
   }
   getRegisterData(): Observable<Record<string, string[]>>{
     return this.http.get<Record<string, string[]>>(`${this.apiUrl1}auth/data/register`);
@@ -71,6 +79,9 @@ export class ApiService {
   }
   getLeave(){
     return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/leave`)
+  }
+  getLeaveData(name:string){
+    return this.http.get(`${this.apiUrl1}auth/data/leave/${name}`,)
   }
   // getDepartment(page: number, size: number):any{
   //   return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/department?&page=${page}&size=${size}`);
@@ -131,7 +142,7 @@ export class ApiService {
 
   getDepartments(): Observable<any> {
     // Get all department (for dropdowns, etc.)
-    return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/department/all`);
+    return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/department`);
   }
 
   createDepartment(department: any): Observable<any> {
@@ -157,4 +168,5 @@ export class ApiService {
     // Get all branches (for dropdowns, etc.)
     return this.http.get(`${this.apiUrl1}${localStorage.getItem('role')}/branch`);
   }
+
 }

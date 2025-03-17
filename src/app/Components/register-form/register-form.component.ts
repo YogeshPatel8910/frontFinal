@@ -237,10 +237,14 @@ export class RegisterFormComponent implements OnInit {
       next: (response: any) => {
         console.log('Registration Successful', response.user);
         this.isLoading = false;
-        this.close();
-        if(!localStorage.getItem('role')){
+        if(!this.showCloseButton){
           this.authService.setAuthenticated(true);
           this.router.navigate(['/login']);
+        }
+        else{
+          console.log('showclose');
+          
+          this.close();
         }
       },
       error: (error: { error: { message: string; }; }) => {

@@ -1,80 +1,257 @@
-<div>
+<div class="appointments-container">
     <!-- Header remains visible -->
     <app-header></app-header>
 
-    <div class="container-fluid pt-4" style="background-color: rgba(15, 160, 228, 0.089)">
+    <div class="container-fluid py-4 bg-light-blue">
         <!-- Blur effect only on the table and background, not header -->
-        <div [class.blur-background]="showForm">
-            <div *ngIf="role === 'patient'" class="text-center mb-4">
-                <button class="btn btn-primary" (click)="createForm()">
-                    <i class="bi bi-plus-circle"></i>
-                    {{ showForm ? "Cancel" : "Create Appointment" }}
-                </button>
+        <div [class.blur-background]="showForm || reportForm">
+            <!-- Top action buttons -->
+            <div class="container mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <h4 class="text-primary mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>My Appointments
+                        </h4>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <button *ngIf="role === 'patient'" class="btn btn-primary rounded-pill shadow-sm me-2" (click)="createForm()">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Create Appointment
+                        </button>
+                        <button class="btn btn-outline-secondary rounded-pill" (click)="exportAppointments()">
+                            <i class="bi bi-download me-1"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
             </div>
-            <!-- <p>{{data|json}}</p> -->
-            <!-- Appointments Table -->
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 mt-2" *ngFor="
-              let appointment of appointments | paginate : {itemsPerPage: itemsPerPage,currentPage: currentPage,totalItems: totalElements}">
-                        <div class="card appointment-card shadow-sm clickable-card"
-                            style="background-color: rgba(202, 27, 27, 0.096)"
-                            [ngClass]="getStatusClasses(appointment.status)" (click)="openModal(content, appointment)">
-                            <div class="card-body d-flex flex-column gap-1">
-                                <!-- Appointment Info -->
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span *ngIf="role === 'doctor'" class="text-muted fw-bold">
-                                        {{ appointment.patientName }} |
-                                        {{ appointment.branchName }} |
-                                        {{ appointment.departmentName }}
+            
+            <!-- Filters Section -->
+            <div class="container mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body p-3">
+                        <div class="row align-items-center g-3">
+                            <!-- Search box -->
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white">
+                                        <i class="bi bi-search"></i>
                                     </span>
-                                    <span *ngIf="role === 'patient'" class="text-muted fw-bold">
-                                        {{ appointment.doctorName }} |
-                                        {{ appointment.branchName }} |
-                                        {{ appointment.departmentName }}
-                                    </span>
-                                    <span *ngIf="role === 'admin'" class="text-muted fw-bold">
-                                        {{ appointment.patientName }} |
-                                        {{ appointment.doctorName }} |
-                                        {{ appointment.branchName }} |
-                                        {{ appointment.departmentName }}
-                                    </span>
-                                    <span class="badge status-badge" [ngClass]="getStatusClasses(appointment.status)">
-                                        {{ appointment.status }}
-                                    </span>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        placeholder="Search appointments..."
+                                        [(ngModel)]="searchTerm"
+                                        (keyup)="applyFilters()"
+                                    >
                                 </div>
-
-                                <!-- Date & Time + Action Buttons (Inline) -->
-                                <div class="d-flex justify-content-between align-items-center text-muted mt-2">
-                                    <span class="fs-6">📅 {{ appointment.date | date : "fullDate" }} ⏰
-                                        {{ appointment.timeSlot | timeFormat }}</span>
-                                    <div class="d-flex gap-2">
-                                        <button *ngIf="
-                        role === 'patient' &&
-                        !(appointment.status === 'CANCELLED')
-                      " class="btn btn-sm btn-outline-danger" (click)="onCancel($event, appointment)">
-                                            ❌ Cancel
-                                        </button>
-                                        <button *ngIf="
-                        !(role === 'admin') &&
-                        !(appointment.status === 'CANCELLED')
-                      " class="btn btn-sm btn-outline-primary" (click)="onReschedule($event, appointment)">
-                                            🔄 Reschedule
-                                        </button>
-                                        <button *ngIf="role === 'doctor'" class="btn btn-sm btn-outline-secondary" (click)="createMedicalReport($event)">
-                                            📄 Report
-                                        </button>
+                            </div>
+                            
+                            <!-- Status filter -->
+                            <div class="col-md-2">
+                                <select 
+                                    class="form-select"
+                                    [(ngModel)]="statusFilter"
+                                    (change)="applyFilters()"
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Date filters -->
+                            <div class="col-md-4">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input 
+                                            type="date" 
+                                            class="form-control"
+                                            placeholder="From date"
+                                            [(ngModel)]="startDate"
+                                            (change)="applyFilters()"
+                                        >
+                                    </div>
+                                    <div class="col-6">
+                                        <input 
+                                            type="date" 
+                                            class="form-control"
+                                            placeholder="To date"
+                                            [(ngModel)]="endDate"
+                                            (change)="applyFilters()"
+                                        >
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Sort options -->
+                            <div class="col-md-2">
+                                <div class="d-flex">
+                                    <select 
+                                        class="form-select me-2"
+                                        [(ngModel)]="sortBy"
+                                        (change)="applyFilters()"
+                                    >
+                                        <option value="date">Sort by Date</option>
+                                        <option value="status">Sort by Status</option>
+                                    </select>
+                                    <button 
+                                        class="btn btn-outline-secondary" 
+                                        (click)="toggleSortOrder()"
+                                        title="Toggle sort order"
+                                    >
+                                        <i class="bi" [ngClass]="sortOrder === 'asc' ? 'bi-sort-up' : 'bi-sort-down'"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter summary and reset -->
+                        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="searchTerm || statusFilter !== 'all' || startDate || endDate">
+                            <div>
+                                <span class="badge bg-light text-dark me-2" *ngIf="searchTerm">
+                                    <i class="bi bi-search me-1"></i>
+                                    "{{searchTerm}}"
+                                    <i class="bi bi-x ms-1" role="button" (click)="searchTerm = ''; applyFilters()"></i>
+                                </span>
+                                <span class="badge bg-light text-dark me-2" *ngIf="statusFilter !== 'all'">
+                                    <i class="bi bi-funnel me-1"></i>
+                                    Status: {{statusFilter}}
+                                    <i class="bi bi-x ms-1" role="button" (click)="statusFilter = 'all'; applyFilters()"></i>
+                                </span>
+                                <span class="badge bg-light text-dark me-2" *ngIf="startDate && endDate">
+                                    <i class="bi bi-calendar-range me-1"></i>
+                                    Date range: {{startDate | date}} - {{endDate | date}}
+                                    <i class="bi bi-x ms-1" role="button" (click)="startDate = ''; endDate = ''; applyFilters()"></i>
+                                </span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+                                <i class="bi bi-x-circle me-1"></i>Clear All Filters
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Loading indicator -->
+            <div *ngIf="isLoading" class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Appointments List -->
+            <div class="container" *ngIf="!isLoading">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 mt-2" *ngFor="
+  let appointment of filteredAppointments | paginate : {itemsPerPage: itemsPerPage,currentPage: currentPage,totalItems: totalElements}">
+    <div class="card appointment-card shadow-sm clickable-card"
+        [ngClass]="getStatusClasses(appointment.status)" (click)="openModal(content, appointment)">
+        <div class="card-body d-flex flex-column gap-2">
+            <!-- Appointment Info -->
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="appointment-info">
+                    <span *ngIf="role === 'doctor'" class="text-muted fw-bold">
+                        <i class="bi bi-person-fill me-1"></i>{{ appointment.patientName }} | 
+                        <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
+                        <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
+                    </span>
+                    <span *ngIf="role === 'patient'" class="text-muted fw-bold">
+                        <i class="bi bi-clipboard-pulse me-1"></i>{{ appointment.doctorName }} | 
+                        <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
+                        <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
+                    </span>
+                    <span *ngIf="role === 'admin'" class="text-muted fw-bold">
+                        <i class="bi bi-person-fill me-1"></i>{{ appointment.patientName }} | 
+                        <i class="bi bi-clipboard-pulse me-1"></i>{{ appointment.doctorName }} | 
+                        <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
+                        <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
+                    </span>
+                </div>
+                <span class="badge status-badge" [ngClass]="getStatusClasses(appointment.status)">
+                    {{ appointment.status }}
+                </span>
+            </div>
 
-            <!-- Pagination Controls -->
-            <pagination-controls (pageChange)="onPageChange($event)" class="mt-3 d-flex justify-content-center">
-            </pagination-controls>
+            <!-- Date & Time + Action Buttons (Inline) -->
+            <div class="d-flex justify-content-between align-items-center text-muted mt-1">
+                <span class="fs-6">
+                    <i class="bi bi-calendar-event me-1"></i>{{ appointment.date | date : "fullDate" }} 
+                    <i class="bi bi-clock ms-2 me-1"></i>{{ appointment.timeSlot | timeFormat }}
+                </span>
+                <div class="action-buttons d-flex gap-2">
+                    <button 
+                      *ngIf="role === 'patient' && !(appointment.status === 'CANCELLED' || appointment.status === 'COMPLETED')" 
+                      class="btn btn-sm btn-outline-danger rounded-pill" 
+                      (click)="buttonClick($event); onCancel($event, appointment)">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                    
+                    <button 
+                      *ngIf="!(role === 'admin') && !(appointment.status === 'CANCELLED' || appointment.status === 'COMPLETED')" 
+                      class="btn btn-sm btn-outline-primary rounded-pill" 
+                      (click)="buttonClick($event); onReschedule($event, appointment)">
+                        <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+                    </button>
+                    
+                    <button 
+                      *ngIf="role === 'doctor' && appointment.status === 'CONFIRMED'" 
+                      class="btn btn-sm btn-outline-secondary rounded-pill" 
+                      (click)="buttonClick($event); createMedicalReport($event, appointment)">
+                        <i class="bi bi-file-earmark-text me-1"></i>Report
+                    </button>
+                    
+                    <button 
+                      *ngIf="role === 'doctor' && appointment.medicalReport" 
+                      class="btn btn-sm btn-outline-success rounded-pill" 
+                      (click)="buttonClick($event); openModal(content, appointment)">
+                        <i class="bi bi-eye me-1"></i>View Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                </div>
+            </div>
+
+            <!-- Pagination Controls with counts -->
+            <div class="container mt-4 mb-3" *ngIf="!isLoading && filteredAppointments.length > 0">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                    <div class="text-muted mb-3 mb-md-0">
+                        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+                        {{ calculateLastItemIndex()  }} of {{ totalElements }} appointments
+                    </div>
+                    <pagination-controls (pageChange)="onPageChange($event)" class="my-pagination">
+                    </pagination-controls>
+                </div>
+            </div>
+            
+            <!-- No appointments state -->
+            <div *ngIf="!isLoading && filteredAppointments.length === 0" class="text-center py-5">
+                <div class="empty-state">
+                    <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                    <h4 class="mb-3">No appointments found</h4>
+                    <p class="text-muted mb-4">
+                        <span *ngIf="searchTerm || statusFilter !== 'all' || startDate || endDate">
+                            Try adjusting your filters to see more results.
+                        </span>
+                        <span *ngIf="!(searchTerm || statusFilter !== 'all' || startDate || endDate) && role === 'patient'">
+                            Click "Create Appointment" to schedule your visit.
+                        </span>
+                    </p>
+                    <button *ngIf="role === 'patient'" class="btn btn-primary rounded-pill" (click)="createForm()">
+                        <i class="bi bi-plus-circle me-1"></i>Create Appointment
+                    </button>
+                    <button *ngIf="searchTerm || statusFilter !== 'all' || startDate || endDate" 
+                        class="btn btn-outline-secondary rounded-pill ms-2" 
+                        (click)="resetFilters()">
+                        <i class="bi bi-x-circle me-1"></i>Clear Filters
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -82,88 +259,244 @@
     <div *ngIf="showForm" class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5)" tabindex="-1"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h3 class="modal-title fw-bold">
+                        <i class="bi" [ngClass]="isRescheduleMode ? 'bi-arrow-repeat me-2' : 'bi-calendar-plus me-2'"></i>
                         {{
                         isRescheduleMode
                         ? "Reschedule Appointment"
                         : "Book an Appointment"
                         }}
                     </h3>
-                    <button type="button" class="btn-close custom-close" (click)="toggleForm()"></button>
+                    <button type="button" class="btn-close" (click)="toggleForm()"></button>
                 </div>
-                <div class="modal-body p-4 position-relative">
+                <div class="modal-body p-0 m-0 position-relative">
                     <app-appointment-form [appointmentData]="selectedAppointment" [isRescheduleMode]="isRescheduleMode"
                         (closeForm)="toggleForm()"></app-appointment-form>
                 </div>
             </div>
         </div>
     </div>
- <!-- MedicalReport Form Popup -->
- <!-- <div *ngIf="showForm" class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5)" tabindex="-1"
- aria-hidden="true">
- <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-     <div class="modal-content">
-         <div class="modal-header">
-             <h3>
-                 {{
-                 isRescheduleMode
-                 ? "Reschedule Appointment"
-                 : "Book an Appointment"
-                 }}
-             </h3>
-             <button type="button" class="btn-close custom-close" (click)="toggleForm()"></button>
-         </div>
-         <div class="modal-body p-4 position-relative">
-             <app-medical-report-form
-                 (closeForm)="toggleForm()"></app-medical-report-form>
-         </div>
-     </div>
- </div>
-</div> -->
-    <ng-template #noAppointments>
-        <p>No appointments available.</p>
-    </ng-template>
 </div>
+
 <!-- Bootstrap Modal -->
 <ng-template #content let-modal>
-    <div class="modal-header">
-        <h5 class="modal-title">Appointment Details</h5>
+    <div class="modal-header" [ngClass]="getStatusClasses(selectedAppointment?.status)">
+        <h5 class="modal-title fw-bold"><i class="bi bi-info-circle me-2"></i>Appointment Details</h5>
         <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <p><strong>Patient Name:</strong> {{ selectedAppointment?.patientName }}</p>
-        <p><strong>Doctor:</strong> {{ selectedAppointment?.doctorName }}</p>
-        <p>
-            <strong>Department:</strong> {{ selectedAppointment?.departmentName }}
-        </p>
-        <p><strong>Date:</strong> {{ selectedAppointment?.date }}</p>
-        <p><strong>Time Slot:</strong> {{ selectedAppointment?.timeSlot }}</p>
-        <p><strong>Reason:</strong> {{ selectedAppointment?.reason }}</p>
-        <p>
-            <strong>Medical Report:</strong> {{ selectedAppointment?.medicalReport }}
-        </p>
-        <p><strong>Status:</strong> {{ selectedAppointment?.status }}</p>
+        <div class="appointment-detail-grid">
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-person me-2"></i>Patient:</span>
+                <span class="detail-value">{{ selectedAppointment?.patientName }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-clipboard-pulse me-2"></i>Doctor:</span>
+                <span class="detail-value">{{ selectedAppointment?.doctorName }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-clipboard-plus me-2"></i>Department:</span>
+                <span class="detail-value">{{ selectedAppointment?.departmentName }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-calendar-event me-2"></i>Date:</span>
+                <span class="detail-value">{{ selectedAppointment?.date | date: 'fullDate' }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-clock me-2"></i>Time:</span>
+                <span class="detail-value">{{ selectedAppointment?.timeSlot | timeFormat }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-chat-left-text me-2"></i>Reason:</span>
+                <span class="detail-value">{{ selectedAppointment?.reason }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-file-earmark-text me-2"></i>Medical Report:</span>
+                <span class="detail-value" *ngIf="!selectedAppointment?.medicalReport">Not available</span>
+                <span class="detail-value" *ngIf="selectedAppointment?.medicalReport">
+                    <span class="badge bg-success me-2">Available</span>
+                    <button *ngIf="role === 'doctor'" 
+                            class="btn btn-sm btn-outline-primary ms-2" 
+                            (click)="createMedicalReport($event, selectedAppointment, modal)">
+                        <i class="bi bi-pencil me-1"></i>Edit Report
+                    </button>
+                </span>
+                <div *ngIf="selectedAppointment?.medicalReport" class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h5 class="fw-bold"><i class="bi bi-file-earmark-medical me-2"></i>Medical Report</h5>
+                      <button *ngIf="role === 'doctor'" 
+                              class="btn btn-sm btn-outline-primary rounded-pill" 
+                              (click)="createMedicalReport($event, selectedAppointment, modal)">
+                        <i class="bi bi-pencil me-1"></i>Edit Report
+                      </button>
+                    </div>
+                    
+                    <!-- <div class="card shadow-sm border-0">
+                      <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="text-muted small">
+                            <i class="bi bi-clock me-1"></i>Created: {{ selectedAppointment?.medicalReport?.createdDate | date: 'medium' }}
+                          </span>
+                          <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Verified
+                          </span>
+                        </div>
+                      </div>
+                      <div class="card-body p-0">
+                        <div class="medical-report-section">
+                          <div class="section-header">
+                            <i class="bi bi-clipboard2-pulse me-2"></i>Diagnosis
+                          </div>
+                          <div class="section-content">
+                            {{ selectedAppointment?.medicalReport?.diagnosis || 'No diagnosis provided.' }}
+                          </div>
+                        </div>
+                        
+                        <div class="medical-report-section">
+                          <div class="section-header">
+                            <i class="bi bi-capsule me-2"></i>Treatment Plan
+                          </div>
+                          <div class="section-content">
+                            {{ selectedAppointment?.medicalReport?.treatment || 'No treatment plan specified.' }}
+                          </div>
+                        </div>
+                        
+                        <div class="medical-report-section">
+                          <div class="section-header">
+                            <i class="bi bi-journal-medical me-2"></i>Prescription
+                          </div>
+                          <div class="section-content">
+                            <div *ngIf="selectedAppointment?.medicalReport?.prescription; else noPrescription">
+                              <pre class="prescription-text">{{ selectedAppointment?.medicalReport?.prescription }}</pre>
+                            </div>
+                            <ng-template #noPrescription>
+                              <p class="text-muted">No medications prescribed.</p>
+                            </ng-template>
+                          </div>
+                        </div>
+                        
+                        <div class="medical-report-section">
+                          <div class="section-header">
+                            <i class="bi bi-journal-text me-2"></i>Additional Notes
+                          </div>
+                          <div class="section-content">
+                            {{ selectedAppointment?.medicalReport?.notes || 'No additional notes.' }}
+                          </div>
+                        </div>
+                        
+                        <div *ngIf="selectedAppointment?.medicalReport?.followUp" class="medical-report-section">
+                          <div class="section-header bg-info bg-opacity-10">
+                            <i class="bi bi-calendar-check me-2"></i>Follow-up Recommendation
+                          </div>
+                          <div class="section-content bg-info bg-opacity-10">
+                            {{ selectedAppointment?.medicalReport?.followUp }}
+                            <button *ngIf="role === 'patient'" class="btn btn-sm btn-outline-primary mt-2 rounded-pill">
+                              <i class="bi bi-calendar-plus me-1"></i>Schedule Follow-up
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <button class="btn btn-sm btn-outline-secondary rounded-pill">
+                            <i class="bi bi-printer me-1"></i>Print Report
+                          </button>
+                          <span class="text-muted small">Report ID: {{ selectedAppointment?.medicalReport?.id }}</span>
+                        </div>
+                      </div>
+                    </div> -->
+                </div> 
+            </div>
+            <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-tag me-2"></i>Status:</span>
+                <span class="detail-value badge" [ngClass]="getStatusClasses(selectedAppointment?.status)">
+                    {{ selectedAppointment?.status }}
+                </span>
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="modal.close()">Close</button>
+        <!-- Action buttons for the modal -->
+        <div class="d-flex gap-2 justify-content-end">
+            <button *ngIf="
+                role === 'patient' &&
+                !(selectedAppointment?.status === 'CANCELLED' || selectedAppointment?.status === 'COMPLETED')
+              " class="btn btn-danger rounded-pill" (click)="onCancel($event, selectedAppointment); modal.close()">
+                <i class="bi bi-x-circle me-1"></i>Cancel Appointment
+            </button>
+            <button *ngIf="
+                !(role === 'admin') &&
+                !(selectedAppointment?.status === 'CANCELLED' || selectedAppointment?.status === 'COMPLETED')
+              " class="btn btn-primary rounded-pill" (click)="onReschedule($event, selectedAppointment); modal.close()">
+                <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+            </button>
+            <button *ngIf="role === 'doctor' && selectedAppointment?.status === 'CONFIRMED'" 
+            class="btn btn-secondary rounded-pill" 
+            (click)="createMedicalReport($event, selectedAppointment, modal)">
+            <i class="bi bi-file-earmark-text me-1"></i>Create Report
+          </button>
+            <button class="btn btn-outline-secondary rounded-pill" (click)="modal.close()">
+                <i class="bi bi-x me-1"></i>Close
+            </button>
+        </div>
     </div>
 </ng-template>
 
+
+<!-- Medical Report Form Popup -->
+<div *ngIf="reportForm" class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5)" tabindex="-1"
+aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header  bg-primary text-white">
+                <h3 class="modal-title fw-bold">
+                    <i class="bi bi-file-earmark-medical me-2"></i> 
+                    {{ selectedAppointment?.medicalReport ? 'Edit' : 'Create' }} Medical Report
+                </h3>
+                <button type="button" class="btn-close" (click)="closeReportForm()"></button>
+            </div>
+            <div class="modal-body p-0 position-relative">
+                <app-medical-report-form 
+                    [appointmentData]="selectedAppointment"
+                    (closeForm)="closeReportForm()">
+                </app-medical-report-form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- Confirmation Modal -->
 <ng-template #confirmModal let-modal>
-    <div class="modal-header">
-        <h5 class="modal-title">Confirm Cancellation</h5>
-        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Confirm Cancellation</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <p>Are you sure you want to cancel this appointment?</p>
+        <div class="text-center mb-3">
+            <i class="bi bi-calendar-x display-4 text-danger"></i>
+        </div>
+        <p class="mb-2">Are you sure you want to cancel this appointment?</p>
+        <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+        
+        <div class="appointment-summary bg-light p-3 rounded mb-3">
+            <div><strong>Date:</strong> {{ selectedAppointment?.date | date: 'fullDate' }}</div>
+            <div><strong>Time:</strong> {{ selectedAppointment?.timeSlot | timeFormat }}</div>
+            <div *ngIf="role === 'patient'"><strong>Doctor:</strong> {{ selectedAppointment?.doctorName }}</div>
+            <div *ngIf="role === 'doctor'"><strong>Patient:</strong> {{ selectedAppointment?.patientName }}</div>
+            <div><strong>Department:</strong> {{ selectedAppointment?.departmentName }}</div>
+        </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-danger" (click)="confirmDelete(modal)">
-            Yes, Cancel
+        <button class="btn btn-danger rounded-pill" (click)="confirmDelete(modal)">
+            <i class="bi bi-x-circle me-1"></i>Yes, Cancel Appointment
         </button>
-        <button class="btn btn-secondary" (click)="modal.dismiss()">No</button>
+        <button class="btn btn-outline-secondary rounded-pill" (click)="modal.dismiss()">
+            <i class="bi bi-arrow-left me-1"></i>No, Keep Appointment
+        </button>
     </div>
 </ng-template>
+
+<!-- Add this entirely new section for the medical report display -->

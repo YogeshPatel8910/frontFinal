@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../Services/api.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -9,9 +9,10 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './branch.component.html',
   styleUrl: './branch.component.css'
 })
-export class BranchComponent {
+export class BranchComponent implements OnInit{
 [x: string]: any;
-  branchForm:FormGroup
+  branchForm:FormGroup;
+  departments:string[]=[]
   currentPage: number = 1;  // Ensure this starts at 1
   itemsPerPage: number = 10;
   totalElements: number = 0;
@@ -36,11 +37,13 @@ export class BranchComponent {
     this.branchForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       address: ['', Validators.required],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9\+\-\s]{8,15}$/)]]
+      phone: ['', [Validators.required, Validators.pattern(/^[0-9\+\-\s]{8,15}$/)]],
+      departmentName:[[],[]]
     });
   }
   ngOnInit(): void {
     this.loadBranches();
+    this.loadDepatments();
   }
 
   loadBranches(): void {
@@ -63,7 +66,17 @@ export class BranchComponent {
       }
     });
   }
-
+  loadDepatments(): void {
+    this.apiService.getDepartments().subscribe({
+      next: (response: any) => {
+        this.departments = response['data'] || [];
+      },
+      error: (error: any) => {
+        this.toastr.error('Failed to load branches', 'Error');
+        console.error('Error loading branches:', error);
+      }
+    });
+  }
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadBranches();
@@ -123,7 +136,6 @@ export class BranchComponent {
   submitBranch(): void {
     if (this.branchForm.valid) {
       const branch = this.branchForm.value;
-      
       this.apiService.createBranch(branch).subscribe({
         next: () => {
           this.toastr.success('Branch created successfully', 'Success');

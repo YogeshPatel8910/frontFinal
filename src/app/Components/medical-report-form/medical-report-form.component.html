@@ -1,177 +1,198 @@
-<div class="container">
-  <h2 class="my-4">Medical Report</h2>
-  
-  <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
-    <div class="row mb-4">
-      <div class="col-md-4 mb-3">
-        <label for="patientName" class="form-label">Patient Name</label>
-        <input
-          type="text"
-          id="patientName"
-          formControlName="patientName"
-          class="form-control"
-          [ngClass]="{'is-invalid': submitted && reportForm.get('patientName')?.errors}"
-        >
-        <div *ngIf="submitted && reportForm.get('patientName')?.errors?.['required']" class="invalid-feedback">
-          Patient name is required
-        </div>
-      </div>
-      
-      <div class="col-md-4 mb-3">
-        <label for="doctorName" class="form-label">Doctor Name</label>
-        <input
-          type="text"
-          id="doctorName"
-          formControlName="doctorName"
-          class="form-control"
-          [ngClass]="{'is-invalid': submitted && reportForm.get('doctorName')?.errors}"
-        >
-        <div *ngIf="submitted && reportForm.get('doctorName')?.errors?.['required']" class="invalid-feedback">
-          Doctor name is required
-        </div>
-      </div>
-      
-      <div class="col-md-4 mb-3">
-        <label for="appointmentId" class="form-label">Appointment ID</label>
-        <input
-          type="text"
-          id="appointmentId"
-          formControlName="appointmentId"
-          class="form-control"
-          [ngClass]="{'is-invalid': submitted && reportForm.get('appointmentId')?.errors}"
-        >
-        <div *ngIf="submitted && reportForm.get('appointmentId')?.errors?.['required']" class="invalid-feedback">
-          Appointment ID is required
-        </div>
-        <div *ngIf="submitted && reportForm.get('appointmentId')?.errors?.['pattern']" class="invalid-feedback">
-          Appointment ID must be a number
-        </div>
-      </div>
-    </div>
+<div class="container-fluid m-0 p-0">
+  <div class="card ">
     
-    <div class="mb-3">
-      <label for="symptom" class="form-label">Symptoms</label>
-      <textarea
-        id="symptom"
-        formControlName="symptom"
-        class="form-control"
-        rows="3"
-        [ngClass]="{'is-invalid': submitted && reportForm.get('symptom')?.errors}"
-      ></textarea>
-      <div *ngIf="submitted && reportForm.get('symptom')?.errors?.['required']" class="invalid-feedback">
-        Symptoms are required
-      </div>
-    </div>
-    
-    <div class="mb-3">
-      <label for="diagnosis" class="form-label">Diagnosis</label>
-      <textarea
-        id="diagnosis"
-        formControlName="diagnosis"
-        class="form-control"
-        rows="3"
-        [ngClass]="{'is-invalid': submitted && reportForm.get('diagnosis')?.errors}"
-      ></textarea>
-      <div *ngIf="submitted && reportForm.get('diagnosis')?.errors?.['required']" class="invalid-feedback">
-        Diagnosis is required
-      </div>
-    </div>
-    
-    <div class="mb-4">
-      <label for="notes" class="form-label">Notes</label>
-      <textarea
-        id="notes"
-        formControlName="notes"
-        class="form-control"
-        rows="3"
-      ></textarea>
-    </div>
-    
-    <div class="mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Prescriptions</h3>
-        <button type="button" class="btn btn-primary" (click)="addPrescription()">
-          + Add Prescription
-        </button>
-      </div>
-      
-      <div formArrayName="prescriptions">
-        <div *ngFor="let prescription of prescriptions.controls; let i = index" [formGroupName]="i" class="card mb-3 p-3">
-          <div class="d-flex justify-content-between mb-2">
-            <h4 class="card-title">Prescription #{{i + 1}}</h4>
-            <button *ngIf="prescriptions.length > 1" type="button" class="btn btn-danger btn-sm" (click)="removePrescription(i)">
-              Remove
-            </button>
+    <div class="card-body">
+      <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
+        <div class="row mb-4">
+          <div class="col-md-4 mb-3">
+            <label for="patientName" class="form-label fw-bold">Patient Name</label>
+            <input
+              type="text"
+              id="patientName"
+              formControlName="patientName"
+              class="form-control form-control-lg"
+              placeholder="Enter patient's full name"
+              [ngClass]="{'is-invalid': submitted && f['patientName'].errors}"
+            >
+            <div *ngIf="submitted && f['patientName'].errors" class="invalid-feedback">
+              <div *ngIf="f['patientName'].errors['required']">Patient name is required</div>
+              <div *ngIf="f['patientName'].errors['minlength']">Name must be at least 3 characters long</div>
+            </div>
           </div>
           
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label [for]="'medicationName' + i" class="form-label">Medication Name</label>
-              <input
-                [id]="'medicationName' + i"
-                type="text"
-                formControlName="name"
-                class="form-control"
-                [ngClass]="{'is-invalid': submitted && prescription.get('name')?.errors}"
-              >
-              <div *ngIf="submitted && prescription.get('name')?.errors?.['required']" class="invalid-feedback">
-                Medication name is required
-              </div>
+          <div class="col-md-4 mb-3">
+            <label for="doctorName" class="form-label fw-bold">Doctor Name</label>
+            <input
+              type="text"
+              id="doctorName"
+              formControlName="doctorName"
+              class="form-control form-control-lg"
+              placeholder="Enter doctor's full name"
+              [ngClass]="{'is-invalid': submitted && f['doctorName'].errors}"
+            >
+            <div *ngIf="submitted && f['doctorName'].errors" class="invalid-feedback">
+              <div *ngIf="f['doctorName'].errors['required']">Doctor name is required</div>
+              <div *ngIf="f['doctorName'].errors['minlength']">Name must be at least 3 characters long</div>
+            </div>
+          </div>
+          
+          <div class="col-md-4 mb-3">
+            <label for="appointmentId" class="form-label fw-bold">Appointment ID</label>
+            <input
+              type="text"
+              id="appointmentId"
+              formControlName="appointmentId"
+              class="form-control form-control-lg"
+              placeholder="Enter appointment ID number"
+              [ngClass]="{'is-invalid': submitted && f['appointmentId'].errors}"
+            >
+            <div *ngIf="submitted && f['appointmentId'].errors" class="invalid-feedback">
+              <div *ngIf="f['appointmentId'].errors['required']">Appointment ID is required</div>
+              <div *ngIf="f['appointmentId'].errors['pattern']">Appointment ID must be a number</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="symptom" class="form-label fw-bold">Symptoms</label>
+          <textarea
+            id="symptom"
+            formControlName="symptom"
+            class="form-control"
+            rows="3"
+            placeholder="Describe patient's symptoms in detail"
+            [ngClass]="{'is-invalid': submitted && f['symptom'].errors}"
+          ></textarea>
+          <div *ngIf="submitted && f['symptom'].errors" class="invalid-feedback">
+            <div *ngIf="f['symptom'].errors['required']">Symptoms are required</div>
+            <div *ngIf="f['symptom'].errors['minlength']">Provide at least 10 characters for symptoms</div>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="diagnosis" class="form-label fw-bold">Diagnosis</label>
+          <textarea
+            id="diagnosis"
+            formControlName="diagnosis"
+            class="form-control"
+            rows="3"
+            placeholder="Enter detailed diagnosis"
+            [ngClass]="{'is-invalid': submitted && f['diagnosis'].errors}"
+          ></textarea>
+          <div *ngIf="submitted && f['diagnosis'].errors" class="invalid-feedback">
+            <div *ngIf="f['diagnosis'].errors['required']">Diagnosis is required</div>
+            <div *ngIf="f['diagnosis'].errors['minlength']">Provide at least 10 characters for diagnosis</div>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="notes" class="form-label fw-bold">Notes</label>
+          <textarea
+            id="notes"
+            formControlName="notes"
+            class="form-control"
+            rows="3"
+            placeholder="Additional notes, recommendations or follow-up instructions (optional)"
+          ></textarea>
+        </div>
+        
+        <div class="mb-4 card shadow-sm border-0 bg-light">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="card-title mb-0"><i class="bi bi-capsule me-2"></i>Prescriptions</h3>
+              <button type="button" class="btn btn-primary" (click)="addPrescription()">
+                <i class="bi bi-plus-circle me-1"></i> Add Prescription
+              </button>
             </div>
             
-            <div class="col-md-6 mb-3">
-              <label [for]="'dosage' + i" class="form-label">Dosage</label>
-              <input
-                [id]="'dosage' + i"
-                type="text"
-                formControlName="dosage"
-                class="form-control"
-                [ngClass]="{'is-invalid': submitted && prescription.get('dosage')?.errors}"
-              >
-              <div *ngIf="submitted && prescription.get('dosage')?.errors?.['required']" class="invalid-feedback">
-                Dosage is required
-              </div>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-              <label [for]="'duration' + i" class="form-label">Duration</label>
-              <input
-                [id]="'duration' + i"
-                type="text"
-                formControlName="duration"
-                class="form-control"
-                [ngClass]="{'is-invalid': submitted && prescription.get('duration')?.errors}"
-              >
-              <div *ngIf="submitted && prescription.get('duration')?.errors?.['required']" class="invalid-feedback">
-                Duration is required
-              </div>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-              <label [for]="'instructions' + i" class="form-label">Instructions</label>
-              <textarea
-                [id]="'instructions' + i"
-                formControlName="instructions"
-                class="form-control"
-                rows="2"
-                [ngClass]="{'is-invalid': submitted && prescription.get('instructions')?.errors}"
-              ></textarea>
-              <div *ngIf="submitted && prescription.get('instructions')?.errors?.['required']" class="invalid-feedback">
-                Instructions are required
+            <div formArrayName="prescriptions">
+              <div *ngFor="let prescription of prescriptions.controls; let i = index" [formGroupName]="i" class="card mb-3 p-3 border">
+                <div class="d-flex justify-content-between mb-2">
+                  <h4 class="card-title">Prescription #{{i + 1}}</h4>
+                  <button *ngIf="prescriptions.length > 1" type="button" class="btn btn-danger btn-sm" (click)="removePrescription(i)">
+                    <i class="bi bi-trash me-1"></i> Remove
+                  </button>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label [for]="'medicationName' + i" class="form-label fw-bold">Medication Name</label>
+                    <input
+                      [id]="'medicationName' + i"
+                      type="text"
+                      formControlName="name"
+                      class="form-control"
+                      placeholder="Enter medication name"
+                      [ngClass]="{'is-invalid': submitted && prescription.get('name')?.errors}"
+                    >
+                    <div *ngIf="submitted && prescription.get('name')?.errors" class="invalid-feedback">
+                      <!-- <div *ngIf="prescription.get('name')?.errors['required']">Medication name is required</div> -->
+                      <!-- <div *ngIf="prescription.get('name')?.errors['minlength']">Name must be at least 3 characters</div> -->
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label [for]="'dosage' + i" class="form-label fw-bold">Dosage</label>
+                    <input
+                      [id]="'dosage' + i"
+                      type="text"
+                      formControlName="dosage"
+                      class="form-control"
+                      placeholder="E.g., 500mg twice daily"
+                      [ngClass]="{'is-invalid': submitted && prescription.get('dosage')?.errors}"
+                    >
+                    <div *ngIf="submitted && prescription.get('dosage')?.errors?.['required']" class="invalid-feedback">
+                      Dosage is required
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label [for]="'duration' + i" class="form-label fw-bold">Duration</label>
+                    <input
+                      [id]="'duration' + i"
+                      type="text"
+                      formControlName="duration"
+                      class="form-control"
+                      placeholder="E.g., 7 days, 2 weeks"
+                      [ngClass]="{'is-invalid': submitted && prescription.get('duration')?.errors}"
+                    >
+                    <div *ngIf="submitted && prescription.get('duration')?.errors?.['required']" class="invalid-feedback">
+                      Duration is required
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label [for]="'instructions' + i" class="form-label fw-bold">Instructions</label>
+                    <textarea
+                      [id]="'instructions' + i"
+                      formControlName="instructions"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Special instructions for taking this medication"
+                      [ngClass]="{'is-invalid': submitted && prescription.get('instructions')?.errors}"
+                    ></textarea>
+                    <div *ngIf="submitted && prescription.get('instructions')?.errors" class="invalid-feedback">
+                      <!-- <div *ngIf="prescription.get('instructions')?.errors['required']">Instructions are required</div> -->
+                      <!-- <div *ngIf="prescription.get('instructions')?.errors['minlength']">Provide at least 5 characters</div> -->
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+        
+        <div class="d-flex justify-content-end mt-4">
+          <button type="button" class="btn btn-outline-secondary me-2" (click)="resetForm()">
+            <i class="bi bi-x-circle me-1"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-success btn-lg" [disabled]="loading">
+            <i class="bi bi-save me-1"></i> 
+            <span *ngIf="!loading">Save Report</span>
+            <span *ngIf="loading">Saving... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></span>
+          </button>
+        </div>
+      </form>
     </div>
-    
-    <div class="d-flex justify-content-end">
-      <button type="button" class="btn btn-secondary me-2" (click)="resetForm()">
-        Cancel
-      </button>
-      <button type="submit" class="btn btn-success">
-        Save Report
-      </button>
-    </div>
-  </form>
+  </div>
 </div>

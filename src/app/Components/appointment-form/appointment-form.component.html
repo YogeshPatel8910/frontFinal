@@ -1,35 +1,102 @@
-<div>
-    <form *ngIf="appointmentForm" [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
-
-        <!-- Dynamic Form Fields -->
-        <div *ngFor="let key of roleFields[userRole]" class="mb-3">
-            <label class="form-label">{{ key | titlecase }}</label>
-
-            <!-- Select Input -->
-            <select *ngIf="fieldConfig[key].type === 'select'" class="form-select" [formControlName]="key">
-                <option value="">{{ fieldConfig[key].placeholder }}</option>
-                <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
-            </select>
-
-            <!-- Other Input Types -->
-            <input *ngIf="fieldConfig[key].type !== 'select'" [type]="fieldConfig[key].type" class="form-control"
-                [formControlName]="key" [placeholder]="fieldConfig[key].placeholder"
-                [ngClass]="{'is-invalid': appointmentForm.get(key)?.invalid && appointmentForm.get(key)?.touched}">
-
-            <!-- Error Messages -->
-            <div *ngIf="appointmentForm.get(key)?.invalid && appointmentForm.get(key)?.touched"
-                class="text-danger small">
-                <span *ngFor="let error of fieldConfig[key].errors | keyvalue">
-                    <span *ngIf="appointmentForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
-                </span>
-            </div>
-        </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary w-100 mt-3" 
-        [disabled]="isRescheduleMode ? (!appointmentForm.valid || isSameAsOriginal()) : !appointmentForm.valid">
-        {{ isRescheduleMode ? 'Reschedule Appointment' : 'Book Appointment' }}
+<div class="appointment-container">
+  <form *ngIf="appointmentForm" [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+    <!-- Error message display -->
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="close" (click)="clearError()">
+        <span>&times;</span>
+      </button>
+    </div>
+    
+    <!-- Dynamic Form Fields -->
+    <div *ngFor="let key of roleFields[userRole]" class="mb-3">
+      <label class="form-label">{{ key | titlecase }}</label>
+      
+      <!-- Select Input for regular selects -->
+      <select *ngIf="fieldConfig[key].type === 'select' && key !== 'timeSlot'" 
+              class="form-select" 
+              [formControlName]="key">
+        <option value="">{{ fieldConfig[key].placeholder }}</option>
+        <option *ngFor="let option of fieldConfig[key].options" [value]="option">{{ option }}</option>
+      </select>
+      
+      <!-- Date Input with Calendar -->
+<div class="input-group date-picker-group" *ngIf="key === 'date'">
+    <input type="text" 
+           class="form-control date-input"
+           ngbDatepicker 
+           #d="ngbDatepicker"
+           formControlName="date"
+           [dayTemplate]="t"
+           [minDate]="minDate"
+           [markDisabled]="isDateUnavailable"
+           placeholder="Click to select date"
+           readonly
+           (click)="d.toggle()"
+           [ngClass]="{'is-invalid': appointmentForm.get('date')?.invalid && appointmentForm.get('date')?.touched}"/>
+    <button class="btn btn-calendar" type="button" (click)="d.toggle()">
+      <i class="calendar-icon"></i>
     </button>
-    </form>
-
+  </div>
+      <ng-template #t let-date let-disabled="disabled">
+        <span [class.text-muted]="disabled"
+              [class.bg-danger]="isDateUnavailable(date)"
+              [class.text-white]="isDateUnavailable(date)"
+              [class.date-rounded]="isDateUnavailable(date)"
+              [class.disabled]="isDateUnavailable(date)">
+          {{ date.day }}
+        </span>
+      </ng-template>
+      
+  
+      <!-- Time Slot Selection -->
+      <select *ngIf="key === 'timeSlot'" 
+              class="form-select time-select" 
+              [formControlName]="key">
+        <option value="">{{ fieldConfig[key].placeholder }}</option>
+        <option *ngFor="let slot of allTimeSlots" 
+                [value]="slot.value" 
+                [disabled]="!slot.available">
+          {{ slot.label }} {{ !slot.available ? '(Unavailable)' : '' }}
+        </option>
+      </select>
+      
+      <!-- Other Input Types -->
+      <input *ngIf="fieldConfig[key].type !== 'select' && key !== 'date'" 
+             [type]="fieldConfig[key].type" 
+             class="form-control"
+             [formControlName]="key" 
+             [placeholder]="fieldConfig[key].placeholder"
+             [ngClass]="{'is-invalid': appointmentForm.get(key)?.invalid && appointmentForm.get(key)?.touched}"/>
+      
+      <!-- Unavailable Dates Display (if doctor is selected) -->
+      <div *ngIf="key === 'date' && appointmentForm.get('doctorName')?.value" class="date-info text-info small mt-1">
+        <span *ngIf="unavailableDates.length > 0">
+          <i class="info-icon">ℹ️</i> Unavailable dates: 
+          <span *ngFor="let date of unavailableDates; let i = index">
+            {{ date | date:'MMM d' }}{{ i < unavailableDates.length - 1 ? ', ' : '' }}
+          </span>
+        </span>
+        <span *ngIf="unavailableDates.length === 0">
+          <i class="info-icon">✓</i> All dates are available for the selected doctor.
+        </span>
+      </div>
+      
+      <!-- Error Messages -->
+      <div *ngIf="appointmentForm.get(key)?.invalid && appointmentForm.get(key)?.touched"
+           class="text-danger small">
+        <span *ngFor="let error of fieldConfig[key].errors | keyvalue">
+          <span *ngIf="appointmentForm.get(key)?.errors?.[error.key]">{{ error.value }}</span>
+        </span>
+      </div>
+    </div>
+    
+    <!-- Submit Button -->
+    <button type="submit" 
+            class="btn btn-primary w-100 mt-3"
+            [disabled]="isRescheduleMode ? (!appointmentForm.valid || isSameAsOriginal()) : !appointmentForm.valid">
+      {{ isRescheduleMode ? 'Reschedule Appointment' : 'Book Appointment' }}
+      <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>
+    </button>
+  </form>
 </div>
