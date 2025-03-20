@@ -8,7 +8,6 @@ interface Department {
   [x: string]: any;
   id: number;
   name: string;
-  branchIds?: number[];
   branchNames?: string[];
   // Add other properties as needed
 }
@@ -69,7 +68,6 @@ export class DepartmentComponent implements OnInit {
     this.apiService.getDepartment(pageIndex, this.itemsPerPage, this.searchTerm, this.sortColumn, this.sortDirection).subscribe({
       next: (response: any) => {
         this.data = response['data'] || [];
-        console.log(this.data);
         
         // Format the branch names as arrays if they're not already
         this.data = this.data.map(dept => {
@@ -97,7 +95,6 @@ export class DepartmentComponent implements OnInit {
     this.apiService.getBranches().subscribe({
       next: (response: any) => {
         this.branches = response['data'] || [];
-        console.log("branches",this.branches);
         
       },
       error: (error: any) => {
@@ -167,13 +164,14 @@ export class DepartmentComponent implements OnInit {
     
     // Convert branch names to array if it's a string
     let branchName = department['branchName'];
+    
     if (typeof branchName === 'string') {
       branchName = branchName.split(',').map(name => name.trim());
     }
     
     this.departmentForm.patchValue({
       name: department.name,
-      branchNames: branchName
+      branchName: branchName
     });
     
     this.modalService.open(content, { centered: true });
@@ -211,11 +209,10 @@ export class DepartmentComponent implements OnInit {
       
       // Create request object
       const department = {
-        id: this.currentDepartmentId,
         name: formValues.name,
-        branchName: formValues.branchNames
+        branchName: formValues.branchName
       };
-      this.apiService.updateDepartment(department.id,department).subscribe({
+      this.apiService.updateDepartment(this.currentDepartmentId,department).subscribe({
         next: () => {
           this.toastr.success('Department updated successfully', 'Success');
           this.loadDepartments();

@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
 export class HeaderComponent {
   role:string=''
   ngOnInit() {
-    this.role = localStorage.getItem('role') || '';
+    this.role = localStorage.getItem('userRole') || '';
   }
 
   logout(){

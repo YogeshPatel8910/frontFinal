@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { LoginFormComponent } from './Components/login-form/login-form.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { authInterceptor } from './Shared/auth.interceptor';
+import { AuthInterceptor } from './Shared/auth.interceptor';
 import { ProfileComponent } from './Components/profile/profile.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { HeaderComponent } from './Components/header/header.component';
@@ -25,6 +25,8 @@ import { ToastrModule } from 'ngx-toastr';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MedicalReportFormComponent } from './Components/medical-report-form/medical-report-form.component';
 import { DashboardComponent } from './Components/dashboard/dashboard.component';
+import { UnauthorizedComponent } from './Components/unauthorized/unauthorized.component';
+import { PageNotFoundComponent } from './Components/page-not-found/page-not-found.component';
 
 
 @NgModule({
@@ -44,6 +46,8 @@ import { DashboardComponent } from './Components/dashboard/dashboard.component';
     DepartmentComponent,
     MedicalReportFormComponent,
     DashboardComponent,
+    UnauthorizedComponent,
+    PageNotFoundComponent,
     
 
   ],
@@ -65,7 +69,7 @@ import { DashboardComponent } from './Components/dashboard/dashboard.component';
   ],
   
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: authInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideAnimationsAsync(), 
   ],
   bootstrap: [AppComponent]

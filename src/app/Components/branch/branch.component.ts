@@ -4,6 +4,22 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 
+interface Department {
+
+  id: number;
+  name: string;
+  // Add other properties as needed
+}
+
+interface Branch {
+  [x: string]: any;
+  id: number;
+  name: string;
+  phone:number;
+  address:string;
+  departNames?:string
+}
+
 @Component({
   selector: 'app-branch',
   templateUrl: './branch.component.html',
@@ -28,6 +44,7 @@ export class BranchComponent implements OnInit{
   searchTerm: string = '';
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
+  currentBranchId:number|null =null;
   constructor(
     private fb: FormBuilder, 
     private apiService: ApiService,
@@ -132,6 +149,25 @@ export class BranchComponent implements OnInit{
     this.branchForm.reset();
     this.modalService.open(content, { centered: true });
   }
+  openEditModal(content: any , branch:Branch): void {
+    this.currentBranchId = branch.id;
+    
+    // // Convert branch names to array if it's a string
+    let departmentName = branch['departmentName'];
+    
+    if (typeof departmentName === 'string') {
+      departmentName = departmentName.split(',').map(name => name.trim());
+    }
+    
+    this.branchForm.patchValue({
+      name: branch.name,
+      address:branch.address,
+      phone:branch.phone,
+      departmentName: departmentName
+    });
+    
+    this.modalService.open(content, { centered: true });
+  }
 
   submitBranch(): void {
     if (this.branchForm.valid) {
@@ -151,6 +187,31 @@ export class BranchComponent implements OnInit{
       this.markFormGroupTouched(this.branchForm);
     }
   }
+  updateBranch(): void {
+    if (this.branchForm.valid && this.currentBranchId) {
+      const formValues = this.branchForm.value;
+      const branch = {
+        name: formValues.name,
+        address: formValues.address,
+        phone:formValues.phone,
+        departmentName : formValues.departmentName
+      };
+      this.apiService.updateBranch(this.currentBranchId,branch).subscribe({
+        next: () => {
+          this.toastr.success('Branch created successfully', 'Success');
+          this.loadBranches();
+          this.modalService.dismissAll();
+        },
+        error: (error: any) => {
+          this.toastr.error('Failed to create branch', 'Error');
+          console.error('Error creating branch:', error);
+        }
+      });
+    } else {
+      this.markFormGroupTouched(this.branchForm);
+    }
+  }
+
   calculateLastItemIndex(): number {
     return Math.min(this.currentPage * this.itemsPerPage, this.totalElements);
   }

@@ -16,7 +16,7 @@ export class ProfileComponent implements OnInit {
   errorMessage: string | null = null;
   successMessage: string | null = null;
   
-  role: string = localStorage.getItem('role') ?? 'ROLE_PATIENT';  // Default to 'ROLE_PATIENT'
+  role: string = localStorage.getItem('userRole') ?? 'patient';  // Default to 'ROLE_PATIENT'
   
   roles = [
     { label: 'patient', value: 'ROLE_PATIENT' },

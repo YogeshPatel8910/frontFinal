@@ -43,6 +43,7 @@
                                         placeholder="Search appointments..."
                                         [(ngModel)]="searchTerm"
                                         (keyup)="applyFilters()"
+                                        aria-label="Search appointments"
                                     >
                                 </div>
                             </div>
@@ -53,6 +54,7 @@
                                     class="form-select"
                                     [(ngModel)]="statusFilter"
                                     (change)="applyFilters()"
+                                    aria-label="Filter by status"
                                 >
                                     <option value="all">All Status</option>
                                     <option value="confirmed">Confirmed</option>
@@ -69,18 +71,18 @@
                                         <input 
                                             type="date" 
                                             class="form-control"
-                                            placeholder="From date"
                                             [(ngModel)]="startDate"
                                             (change)="applyFilters()"
+                                            aria-label="From date"
                                         >
                                     </div>
                                     <div class="col-6">
                                         <input 
                                             type="date" 
                                             class="form-control"
-                                            placeholder="To date"
                                             [(ngModel)]="endDate"
                                             (change)="applyFilters()"
+                                            aria-label="To date"
                                         >
                                     </div>
                                 </div>
@@ -93,6 +95,7 @@
                                         class="form-select me-2"
                                         [(ngModel)]="sortBy"
                                         (change)="applyFilters()"
+                                        aria-label="Sort by"
                                     >
                                         <option value="date">Sort by Date</option>
                                         <option value="status">Sort by Status</option>
@@ -100,7 +103,7 @@
                                     <button 
                                         class="btn btn-outline-secondary" 
                                         (click)="toggleSortOrder()"
-                                        title="Toggle sort order"
+                                        aria-label="Toggle sort order"
                                     >
                                         <i class="bi" [ngClass]="sortOrder === 'asc' ? 'bi-sort-up' : 'bi-sort-down'"></i>
                                     </button>
@@ -114,17 +117,17 @@
                                 <span class="badge bg-light text-dark me-2" *ngIf="searchTerm">
                                     <i class="bi bi-search me-1"></i>
                                     "{{searchTerm}}"
-                                    <i class="bi bi-x ms-1" role="button" (click)="searchTerm = ''; applyFilters()"></i>
+                                    <i class="bi bi-x ms-1" role="button" (click)="searchTerm = ''; applyFilters()" aria-label="Clear search"></i>
                                 </span>
                                 <span class="badge bg-light text-dark me-2" *ngIf="statusFilter !== 'all'">
                                     <i class="bi bi-funnel me-1"></i>
                                     Status: {{statusFilter}}
-                                    <i class="bi bi-x ms-1" role="button" (click)="statusFilter = 'all'; applyFilters()"></i>
+                                    <i class="bi bi-x ms-1" role="button" (click)="statusFilter = 'all'; applyFilters()" aria-label="Clear status filter"></i>
                                 </span>
                                 <span class="badge bg-light text-dark me-2" *ngIf="startDate && endDate">
                                     <i class="bi bi-calendar-range me-1"></i>
                                     Date range: {{startDate | date}} - {{endDate | date}}
-                                    <i class="bi bi-x ms-1" role="button" (click)="startDate = ''; endDate = ''; applyFilters()"></i>
+                                    <i class="bi bi-x ms-1" role="button" (click)="startDate = ''; endDate = ''; applyFilters()" aria-label="Clear date range"></i>
                                 </span>
                             </div>
                             <button class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
@@ -145,75 +148,87 @@
             <!-- Appointments List -->
             <div class="container" *ngIf="!isLoading">
                 <div class="row justify-content-center">
-                    <div class="col-md-10 mt-2" *ngFor="
-  let appointment of filteredAppointments | paginate : {itemsPerPage: itemsPerPage,currentPage: currentPage,totalItems: totalElements}">
-    <div class="card appointment-card shadow-sm clickable-card"
-        [ngClass]="getStatusClasses(appointment.status)" (click)="openModal(content, appointment)">
-        <div class="card-body d-flex flex-column gap-2">
-            <!-- Appointment Info -->
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="appointment-info">
-                    <span *ngIf="role === 'doctor'" class="text-muted fw-bold">
-                        <i class="bi bi-person-fill me-1"></i>{{ appointment.patientName }} | 
-                        <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
-                        <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
-                    </span>
-                    <span *ngIf="role === 'patient'" class="text-muted fw-bold">
-                        <i class="bi bi-clipboard-pulse me-1"></i>{{ appointment.doctorName }} | 
-                        <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
-                        <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
-                    </span>
-                    <span *ngIf="role === 'admin'" class="text-muted fw-bold">
-                        <i class="bi bi-person-fill me-1"></i>{{ appointment.patientName }} | 
-                        <i class="bi bi-clipboard-pulse me-1"></i>{{ appointment.doctorName }} | 
-                        <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
-                        <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
-                    </span>
-                </div>
-                <span class="badge status-badge" [ngClass]="getStatusClasses(appointment.status)">
-                    {{ appointment.status }}
-                </span>
-            </div>
+                    <div class="col-md-10 mt-2" *ngFor="let appointment of filteredAppointments | paginate : {
+                        itemsPerPage: itemsPerPage,
+                        currentPage: currentPage,
+                        totalItems: totalElements}">
+                        <!-- Appointment Card -->
+                        <div class="card appointment-card shadow-sm clickable-card"
+                             [ngClass]="getStatusClasses(appointment.status)"
+                             (click)="openModal(content, appointment)">
+                            <div class="card-body d-flex flex-column gap-2">
+                                <!-- Appointment Info -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="appointment-info">
+                                        <span *ngIf="role === 'doctor'" class="text-muted fw-bold">
+                                            <i class="bi bi-person-fill me-1"></i>{{ appointment.patientName }} | 
+                                            <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
+                                            <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
+                                        </span>
+                                        <span *ngIf="role === 'patient'" class="text-muted fw-bold">
+                                            <i class="bi bi-clipboard-pulse me-1"></i>{{ appointment.doctorName }} | 
+                                            <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
+                                            <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
+                                        </span>
+                                        <span *ngIf="role === 'admin'" class="text-muted fw-bold">
+                                            <i class="bi bi-person-fill me-1"></i>{{ appointment.patientName }} | 
+                                            <i class="bi bi-clipboard-pulse me-1"></i>{{ appointment.doctorName }} | 
+                                            <i class="bi bi-hospital me-1"></i>{{ appointment.branchName }} | 
+                                            <i class="bi bi-clipboard-plus me-1"></i>{{ appointment.departmentName }}
+                                        </span>
+                                    </div>
+                                    <span class="badge status-badge" [ngClass]="getStatusClasses(appointment.status)">
+                                        {{ appointment.status }}
+                                    </span>
+                                </div>
 
-            <!-- Date & Time + Action Buttons (Inline) -->
-            <div class="d-flex justify-content-between align-items-center text-muted mt-1">
-                <span class="fs-6">
-                    <i class="bi bi-calendar-event me-1"></i>{{ appointment.date | date : "fullDate" }} 
-                    <i class="bi bi-clock ms-2 me-1"></i>{{ appointment.timeSlot | timeFormat }}
-                </span>
-                <div class="action-buttons d-flex gap-2">
-                    <button 
-                      *ngIf="role === 'patient' && !(appointment.status === 'CANCELLED' || appointment.status === 'COMPLETED')" 
-                      class="btn btn-sm btn-outline-danger rounded-pill" 
-                      (click)="buttonClick($event); onCancel($event, appointment)">
-                        <i class="bi bi-x-circle me-1"></i>Cancel
-                    </button>
-                    
-                    <button 
-                      *ngIf="!(role === 'admin') && !(appointment.status === 'CANCELLED' || appointment.status === 'COMPLETED')" 
-                      class="btn btn-sm btn-outline-primary rounded-pill" 
-                      (click)="buttonClick($event); onReschedule($event, appointment)">
-                        <i class="bi bi-arrow-repeat me-1"></i>Reschedule
-                    </button>
-                    
-                    <button 
-                      *ngIf="role === 'doctor' && appointment.status === 'CONFIRMED'" 
-                      class="btn btn-sm btn-outline-secondary rounded-pill" 
-                      (click)="buttonClick($event); createMedicalReport($event, appointment)">
-                        <i class="bi bi-file-earmark-text me-1"></i>Report
-                    </button>
-                    
-                    <button 
-                      *ngIf="role === 'doctor' && appointment.medicalReport" 
-                      class="btn btn-sm btn-outline-success rounded-pill" 
-                      (click)="buttonClick($event); openModal(content, appointment)">
-                        <i class="bi bi-eye me-1"></i>View Report
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                <!-- Date & Time + Action Buttons -->
+                                <div class="d-flex justify-content-between align-items-center text-muted mt-1">
+                                    <span class="fs-6">
+                                        <i class="bi bi-calendar-event me-1"></i>{{ appointment.date | date : "fullDate" }} 
+                                        <i class="bi bi-clock ms-2 me-1"></i>{{ appointment.timeSlot | timeFormat }}
+                                    </span>
+                                    <div class="action-buttons d-flex gap-2">
+                                        <!-- Cancel button -->
+                                        <button 
+                                          *ngIf="role === 'patient' && !(appointment.status === 'CANCELLED' || appointment.status === 'COMPLETED')" 
+                                          class="btn btn-sm btn-outline-danger rounded-pill" 
+                                          (click)="onCancel($event, appointment)"
+                                          aria-label="Cancel appointment">
+                                            <i class="bi bi-x-circle me-1"></i>Cancel
+                                        </button>
+                                        
+                                        <!-- Reschedule button -->
+                                        <button 
+                                          *ngIf="!(role === 'admin') && !(appointment.status === 'CANCELLED' || appointment.status === 'COMPLETED')" 
+                                          class="btn btn-sm btn-outline-primary rounded-pill" 
+                                          (click)="onReschedule($event, appointment)"
+                                          aria-label="Reschedule appointment">
+                                            <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+                                        </button>
+                                        
+                                        <!-- Report button for doctors -->
+                                        <button 
+                                          *ngIf="role === 'doctor' && appointment.status === 'CONFIRMED'" 
+                                          class="btn btn-sm btn-outline-secondary rounded-pill" 
+                                          (click)="createMedicalReport($event, appointment)"
+                                          aria-label="Create medical report">
+                                            <i class="bi bi-file-earmark-text me-1"></i>Report
+                                        </button>
+                                        
+                                        <!-- View report button -->
+                                        <button 
+                                          *ngIf="role !== 'admin' && appointment.medicalReport" 
+                                          class="btn btn-sm btn-outline-success rounded-pill" 
+                                          (click)="onViewReport($event, appointment)"
+                                          aria-label="View medical report">
+                                            <i class="bi bi-eye me-1"></i>View Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -222,9 +237,12 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
                     <div class="text-muted mb-3 mb-md-0">
                         Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
-                        {{ calculateLastItemIndex()  }} of {{ totalElements }} appointments
+                        {{ calculateLastItemIndex() }} of {{ totalElements }} appointments
                     </div>
-                    <pagination-controls (pageChange)="onPageChange($event)" class="my-pagination">
+                    <pagination-controls 
+                        (pageChange)="onPageChange($event)" 
+                        class="my-pagination"
+                        aria-label="Page navigation">
                     </pagination-controls>
                 </div>
             </div>
@@ -235,12 +253,12 @@
                     <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
                     <h4 class="mb-3">No appointments found</h4>
                     <p class="text-muted mb-4">
-                        <span *ngIf="searchTerm || statusFilter !== 'all' || startDate || endDate">
+                        <ng-container *ngIf="searchTerm || statusFilter !== 'all' || startDate || endDate">
                             Try adjusting your filters to see more results.
-                        </span>
-                        <span *ngIf="!(searchTerm || statusFilter !== 'all' || startDate || endDate) && role === 'patient'">
+                        </ng-container>
+                        <ng-container *ngIf="!(searchTerm || statusFilter !== 'all' || startDate || endDate) && role === 'patient'">
                             Click "Create Appointment" to schedule your visit.
-                        </span>
+                        </ng-container>
                     </p>
                     <button *ngIf="role === 'patient'" class="btn btn-primary rounded-pill" (click)="createForm()">
                         <i class="bi bi-plus-circle me-1"></i>Create Appointment
@@ -263,211 +281,324 @@
                 <div class="modal-header bg-light">
                     <h3 class="modal-title fw-bold">
                         <i class="bi" [ngClass]="isRescheduleMode ? 'bi-arrow-repeat me-2' : 'bi-calendar-plus me-2'"></i>
-                        {{
-                        isRescheduleMode
-                        ? "Reschedule Appointment"
-                        : "Book an Appointment"
-                        }}
+                        {{ isRescheduleMode ? "Reschedule Appointment" : "Book an Appointment" }}
                     </h3>
-                    <button type="button" class="btn-close" (click)="toggleForm()"></button>
+                    <button type="button" class="btn-close" (click)="toggleForm()" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0 m-0 position-relative">
-                    <app-appointment-form [appointmentData]="selectedAppointment" [isRescheduleMode]="isRescheduleMode"
-                        (closeForm)="toggleForm()"></app-appointment-form>
+                    <app-appointment-form 
+                        [appointmentData]="selectedAppointment" 
+                        [isRescheduleMode]="isRescheduleMode"
+                        (closeForm)="toggleForm()">
+                    </app-appointment-form>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Bootstrap Modal for Appointment Details -->
+    <ng-template #content let-modal>
+        <div class="modal-header" [ngClass]="getStatusClasses(selectedAppointment?.status)">
+            <h5 class="modal-title fw-bold"><i class="bi bi-info-circle me-2"></i>Appointment Details</h5>
+            <button type="button" class="btn-close" (click)="modal.dismiss()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="appointment-detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-person me-2"></i>Patient:</span>
+                    <span class="detail-value">{{ selectedAppointment?.patientName }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-clipboard-pulse me-2"></i>Doctor:</span>
+                    <span class="detail-value">{{ selectedAppointment?.doctorName }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-clipboard-plus me-2"></i>Department:</span>
+                    <span class="detail-value">{{ selectedAppointment?.departmentName }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-calendar-event me-2"></i>Date:</span>
+                    <span class="detail-value">{{ selectedAppointment?.date | date: 'fullDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-clock me-2"></i>Time:</span>
+                    <span class="detail-value">{{ selectedAppointment?.timeSlot?? "" | timeFormat }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-chat-left-text me-2"></i>Reason:</span>
+                    <span class="detail-value">{{ selectedAppointment?.reason }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-file-earmark-text me-2"></i>Medical Report:</span>
+                    <span class="detail-value" *ngIf="!selectedAppointment?.medicalReport">Not available</span>
+                    <span class="detail-value" *ngIf="selectedAppointment?.medicalReport">
+                        <span class="badge bg-success me-2">Available</span>
+                        <button *ngIf="role === 'doctor'" 
+                                class="btn btn-sm btn-outline-primary ms-2" 
+                                (click)="createMedicalReport($event, selectedAppointment, modal)"
+                                aria-label="Edit report">
+                            <i class="bi bi-pencil me-1"></i>Edit Report
+                        </button>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="bi bi-tag me-2"></i>Status:</span>
+                    <span class="detail-value badge" [ngClass]="getStatusClasses(selectedAppointment?.status)">
+                        {{ selectedAppointment?.status }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- Modal footer with action buttons -->
+        <div class="modal-footer">
+            <div class="d-flex gap-2 justify-content-end">
+                <button *ngIf="
+                    role === 'patient' &&
+                    !(selectedAppointment?.status === 'CANCELLED' || selectedAppointment?.status === 'COMPLETED')
+                  " class="btn btn-danger rounded-pill" (click)="onCancel($event, selectedAppointment); modal.close()"
+                  aria-label="Cancel appointment">
+                    <i class="bi bi-x-circle me-1"></i>Cancel Appointment
+                </button>
+        <button *ngIf="
+            !(role === 'admin') &&
+            !(selectedAppointment?.status === 'CANCELLED' || selectedAppointment?.status === 'COMPLETED')
+          " class="btn btn-primary rounded-pill" (click)="onReschedule($event, selectedAppointment); modal.close()">
+            <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+        </button>
+        <button *ngIf="role === 'doctor' && selectedAppointment?.status === 'CONFIRMED'" 
+        class="btn btn-secondary rounded-pill" 
+        (click)="createMedicalReport($event, selectedAppointment, modal)">
+        <i class="bi bi-file-earmark-text me-1"></i>Create Report
+        </button>
+        <button 
+        *ngIf="role !== 'admin' && selectedAppointment?.medicalReport" 
+        class="btn btn-success rounded-pill" 
+        (click)="onViewReport($event, selectedAppointment, modal)">
+          <i class="bi bi-eye me-1"></i>View Report
+        </button>
+        <button class="btn btn-outline-secondary rounded-pill" (click)="modal.close()">
+            <i class="bi bi-x me-1"></i>Close
+        </button>
+    </div>
 </div>
-
-<!-- Bootstrap Modal -->
-<ng-template #content let-modal>
-    <div class="modal-header" [ngClass]="getStatusClasses(selectedAppointment?.status)">
-        <h5 class="modal-title fw-bold"><i class="bi bi-info-circle me-2"></i>Appointment Details</h5>
-        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <div class="appointment-detail-grid">
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-person me-2"></i>Patient:</span>
-                <span class="detail-value">{{ selectedAppointment?.patientName }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-clipboard-pulse me-2"></i>Doctor:</span>
-                <span class="detail-value">{{ selectedAppointment?.doctorName }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-clipboard-plus me-2"></i>Department:</span>
-                <span class="detail-value">{{ selectedAppointment?.departmentName }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-calendar-event me-2"></i>Date:</span>
-                <span class="detail-value">{{ selectedAppointment?.date | date: 'fullDate' }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-clock me-2"></i>Time:</span>
-                <span class="detail-value">{{ selectedAppointment?.timeSlot | timeFormat }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-chat-left-text me-2"></i>Reason:</span>
-                <span class="detail-value">{{ selectedAppointment?.reason }}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-file-earmark-text me-2"></i>Medical Report:</span>
-                <span class="detail-value" *ngIf="!selectedAppointment?.medicalReport">Not available</span>
-                <span class="detail-value" *ngIf="selectedAppointment?.medicalReport">
-                    <span class="badge bg-success me-2">Available</span>
-                    <button *ngIf="role === 'doctor'" 
-                            class="btn btn-sm btn-outline-primary ms-2" 
-                            (click)="createMedicalReport($event, selectedAppointment, modal)">
-                        <i class="bi bi-pencil me-1"></i>Edit Report
-                    </button>
-                </span>
-                <div *ngIf="selectedAppointment?.medicalReport" class="mt-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h5 class="fw-bold"><i class="bi bi-file-earmark-medical me-2"></i>Medical Report</h5>
-                      <button *ngIf="role === 'doctor'" 
-                              class="btn btn-sm btn-outline-primary rounded-pill" 
-                              (click)="createMedicalReport($event, selectedAppointment, modal)">
-                        <i class="bi bi-pencil me-1"></i>Edit Report
-                      </button>
-                    </div>
-                    
-                    <!-- <div class="card shadow-sm border-0">
-                      <div class="card-header bg-light">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="text-muted small">
-                            <i class="bi bi-clock me-1"></i>Created: {{ selectedAppointment?.medicalReport?.createdDate | date: 'medium' }}
-                          </span>
-                          <span class="badge bg-success">
-                            <i class="bi bi-check-circle me-1"></i>Verified
-                          </span>
-                        </div>
-                      </div>
-                      <div class="card-body p-0">
-                        <div class="medical-report-section">
-                          <div class="section-header">
-                            <i class="bi bi-clipboard2-pulse me-2"></i>Diagnosis
-                          </div>
-                          <div class="section-content">
-                            {{ selectedAppointment?.medicalReport?.diagnosis || 'No diagnosis provided.' }}
-                          </div>
-                        </div>
-                        
-                        <div class="medical-report-section">
-                          <div class="section-header">
-                            <i class="bi bi-capsule me-2"></i>Treatment Plan
-                          </div>
-                          <div class="section-content">
-                            {{ selectedAppointment?.medicalReport?.treatment || 'No treatment plan specified.' }}
-                          </div>
-                        </div>
-                        
-                        <div class="medical-report-section">
-                          <div class="section-header">
-                            <i class="bi bi-journal-medical me-2"></i>Prescription
-                          </div>
-                          <div class="section-content">
-                            <div *ngIf="selectedAppointment?.medicalReport?.prescription; else noPrescription">
-                              <pre class="prescription-text">{{ selectedAppointment?.medicalReport?.prescription }}</pre>
-                            </div>
-                            <ng-template #noPrescription>
-                              <p class="text-muted">No medications prescribed.</p>
-                            </ng-template>
-                          </div>
-                        </div>
-                        
-                        <div class="medical-report-section">
-                          <div class="section-header">
-                            <i class="bi bi-journal-text me-2"></i>Additional Notes
-                          </div>
-                          <div class="section-content">
-                            {{ selectedAppointment?.medicalReport?.notes || 'No additional notes.' }}
-                          </div>
-                        </div>
-                        
-                        <div *ngIf="selectedAppointment?.medicalReport?.followUp" class="medical-report-section">
-                          <div class="section-header bg-info bg-opacity-10">
-                            <i class="bi bi-calendar-check me-2"></i>Follow-up Recommendation
-                          </div>
-                          <div class="section-content bg-info bg-opacity-10">
-                            {{ selectedAppointment?.medicalReport?.followUp }}
-                            <button *ngIf="role === 'patient'" class="btn btn-sm btn-outline-primary mt-2 rounded-pill">
-                              <i class="bi bi-calendar-plus me-1"></i>Schedule Follow-up
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <button class="btn btn-sm btn-outline-secondary rounded-pill">
-                            <i class="bi bi-printer me-1"></i>Print Report
-                          </button>
-                          <span class="text-muted small">Report ID: {{ selectedAppointment?.medicalReport?.id }}</span>
-                        </div>
-                      </div>
-                    </div> -->
-                </div> 
-            </div>
-            <div class="detail-item">
-                <span class="detail-label"><i class="bi bi-tag me-2"></i>Status:</span>
-                <span class="detail-value badge" [ngClass]="getStatusClasses(selectedAppointment?.status)">
-                    {{ selectedAppointment?.status }}
-                </span>
-            </div>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <!-- Action buttons for the modal -->
-        <div class="d-flex gap-2 justify-content-end">
-            <button *ngIf="
-                role === 'patient' &&
-                !(selectedAppointment?.status === 'CANCELLED' || selectedAppointment?.status === 'COMPLETED')
-              " class="btn btn-danger rounded-pill" (click)="onCancel($event, selectedAppointment); modal.close()">
-                <i class="bi bi-x-circle me-1"></i>Cancel Appointment
-            </button>
-            <button *ngIf="
-                !(role === 'admin') &&
-                !(selectedAppointment?.status === 'CANCELLED' || selectedAppointment?.status === 'COMPLETED')
-              " class="btn btn-primary rounded-pill" (click)="onReschedule($event, selectedAppointment); modal.close()">
-                <i class="bi bi-arrow-repeat me-1"></i>Reschedule
-            </button>
-            <button *ngIf="role === 'doctor' && selectedAppointment?.status === 'CONFIRMED'" 
-            class="btn btn-secondary rounded-pill" 
-            (click)="createMedicalReport($event, selectedAppointment, modal)">
-            <i class="bi bi-file-earmark-text me-1"></i>Create Report
-          </button>
-            <button class="btn btn-outline-secondary rounded-pill" (click)="modal.close()">
-                <i class="bi bi-x me-1"></i>Close
-            </button>
-        </div>
-    </div>
 </ng-template>
-
-
-<!-- Medical Report Form Popup -->
-<div *ngIf="reportForm" class="modal fade show d-block" style="background-color: rgba(0, 0, 0, 0.5)" tabindex="-1"
-aria-hidden="true">
+<!-- Reusable Medical Report Modal Component -->
+<div *ngIf="reportForm || reportData" class="modal fade show d-block" 
+     [attr.aria-hidden]="!(reportForm || reportData)"
+     style="background-color: rgba(0, 0, 0, 0.75)" 
+     tabindex="-1"
+     role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header  bg-primary text-white">
-                <h3 class="modal-title fw-bold">
-                    <i class="bi bi-file-earmark-medical me-2"></i> 
+        <div class="modal-content border-0 shadow-lg rounded-4" style="overflow: hidden;">
+            <!-- Modal Header -->
+            <div *ngIf="reportForm" class="modal-header bg-gradient-primary text-white py-3">
+                <h3 class="modal-title fw-bold mb-0 d-flex align-items-center">
+                    <i class="bi bi-file-earmark-medical-fill me-2"></i> 
                     {{ selectedAppointment?.medicalReport ? 'Edit' : 'Create' }} Medical Report
                 </h3>
-                <button type="button" class="btn-close" (click)="closeReportForm()"></button>
+                <button class="btn-close"  aria-label="Close"
+                        (click)="closeReportForm()">
+                </button>
             </div>
-            <div class="modal-body p-0 position-relative">
+            
+            <!-- Form Content -->
+            <div *ngIf="reportForm" class="modal-body p-0 position-relative">
                 <app-medical-report-form 
                     [appointmentData]="selectedAppointment"
+                    [reportData]="selectedAppointment?.medicalReport??null"
                     (closeForm)="closeReportForm()">
                 </app-medical-report-form>
             </div>
+            
+            <!-- Medical Report Display -->
+            <div *ngIf="reportData && selectedAppointment?.medicalReport" class="modal-body p-0">
+                <!-- Modern close button -->
+                <button type="button" 
+                        class="position-absolute top-0 end-0 btn btn-icon m-3 rounded-circle" 
+                        style="z-index: 5; width: 36px; height: 36px; background-color: rgba(255,255,255,0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                        aria-label="Close" 
+                        (click)="closeReportForm()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
+                <!-- Report Header Banner -->
+                <div class="bg-gradient-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="fw-bold mb-1">Medical Report</h4>
+                            <p class="mb-0 opacity-75">
+                                <i class="bi bi-calendar3 me-2"></i>{{ selectedAppointment?.date | date:'mediumDate' }}
+                            </p>
+                        </div>
+                        <span class="badge bg-white text-primary px-3 py-2 rounded-pill">
+                            <i class="bi bi-shield-check me-1"></i>Verified
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Patient & Doctor Card -->
+                <div class="p-4">
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <h5 class="mb-0 ms-3">Patient Details</h5>
+                                    </div>
+                                    <div class="ps-2 border-start border-primary border-3">
+                                        <p class="mb-2"><span class="text-muted">Name:</span> <strong>{{ selectedAppointment?.patientName }}</strong></p>
+                                        <p class="mb-2"><span class="text-muted">Visit Reason:</span> <strong>{{ selectedAppointment?.reason }}</strong></p>
+                                        <p class="mb-0"><span class="text-muted">Appointment ID:</span> <strong>{{ selectedAppointment?.id }}</strong></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-circle bg-info bg-opacity-10 text-info">
+                                            <i class="bi bi-hospital"></i>
+                                        </div>
+                                        <h5 class="mb-0 ms-3">Provider Details</h5>
+                                    </div>
+                                    <div class="ps-2 border-start border-info border-3">
+                                        <p class="mb-2"><span class="text-muted">Doctor:</span> <strong>{{ selectedAppointment?.doctorName }}</strong></p>
+                                        <p class="mb-2"><span class="text-muted">Department:</span> <strong>{{ selectedAppointment?.departmentName }}</strong></p>
+                                        <p class="mb-0"><span class="text-muted">Branch:</span> <strong>{{ selectedAppointment?.branchName }}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Medical Information -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-header bg-white py-3 px-4 border-0">
+                            <h5 class="mb-0">
+                                <i class="bi bi-clipboard2-pulse-fill me-2 text-danger"></i>Clinical Assessment
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Diagnosis Section -->
+                            <div class="px-4 py-3 border-bottom">
+                                <h6 class="text-primary mb-2">Diagnosis</h6>
+                                <p class="mb-0">{{ selectedAppointment?.medicalReport?.diagnosis || 'No diagnosis provided.' }}</p>
+                            </div>
+                            
+                            <!-- Treatment Section -->
+                            <div class="px-4 py-3 border-bottom">
+                                <h6 class="text-success mb-2">Treatment Plan</h6>
+                                <p class="mb-0">{{ selectedAppointment?.medicalReport?.treatment || 'No treatment plan specified.' }}</p>
+                            </div>
+                            
+                            <!-- Notes Section -->
+                            <div class="px-4 py-3">
+                                <h6 class="text-secondary mb-2">Clinical Notes</h6>
+                                <p class="mb-0">{{ selectedAppointment?.medicalReport?.notes || 'No additional notes.' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Prescription Card -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-header bg-white py-3 px-4 border-0">
+                            <h5 class="mb-0">
+                                <i class="bi bi-capsule-pill me-2 text-info"></i>Prescribed Medications
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ng-container *ngIf="selectedAppointment?.medicalReport?.prescriptions?.length; else noPrescription">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th scope="col" class="ps-4" style="width: 40px;">#</th>
+                                                <th scope="col">Medication</th>
+                                                <th scope="col">Dosage</th>
+                                                <th scope="col">Duration</th>
+                                                <th scope="col" class="pe-4">Instructions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let prescriptionItem of selectedAppointment?.medicalReport?.prescriptions; let i = index">
+                                                <td class="ps-4">{{ i + 1 }}</td>
+                                                <td class="fw-bold">{{ prescriptionItem?.name }}</td>
+                                                <td>{{ prescriptionItem?.dosage }}</td>
+                                                <td>{{ prescriptionItem?.duration }}</td>
+                                                <td class="pe-4">{{ prescriptionItem?.instructions }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </ng-container>
+                            <ng-template #noPrescription>
+                                <div class="p-4 text-center">
+                                    <div class="icon-circle mx-auto mb-3 bg-light">
+                                        <i class="bi bi-clipboard-x text-muted"></i>
+                                    </div>
+                                    <p class="text-muted">No medications prescribed for this appointment.</p>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                    
+                    <!-- Follow-up Section -->
+                    <div *ngIf="selectedAppointment?.medicalReport?.followUp" class="card border-0 shadow-sm rounded-4 mb-4 bg-info bg-opacity-10">
+                        <div class="card-body p-4">
+                            <div class="d-flex">
+                                <div class="avatar-circle bg-info bg-opacity-25 text-info me-3">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title text-info mb-2">Follow-up Recommendation</h5>
+                                    <p class="card-text mb-3">{{ selectedAppointment?.medicalReport?.followUp }}</p>
+                                    <button *ngIf="role === 'patient'" 
+                                            class="btn btn-info btn-sm rounded-pill px-3"
+                                            aria-label="Schedule follow-up appointment">
+                                        <i class="bi bi-calendar-plus me-1"></i>Schedule Follow-up
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer Actions -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill me-2 px-3"
+                                    aria-label="Print medical report">
+                                <i class="bi bi-printer me-1"></i>Print Report
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                    aria-label="Download medical report">
+                                <i class="bi bi-download me-1"></i>Download PDF
+                            </button>
+                        </div>
+                        <div class="text-muted d-flex align-items-center">
+                            <i class="bi bi-clock-history me-2"></i>
+                            <span>Created: {{ selectedAppointment?.medicalReport?.createdDate | date: 'medium' }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Actions -->
+                    <div class="d-flex justify-content-end mt-4">
+                        <button *ngIf="role === 'doctor'" 
+                                class="btn btn-primary rounded-pill me-2 px-4" 
+                                (click)="createMedicalReport($event, selectedAppointment)"
+                                aria-label="Edit medical report">
+                            <i class="bi bi-pencil me-1"></i>Edit Report
+                        </button>
+                        <button class="btn btn-light rounded-pill px-4 border"
+                                (click)="closeReportForm()"
+                                aria-label="Close medical report">
+                            <i class="bi bi-x-circle me-1"></i>Close
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-
 <!-- Confirmation Modal -->
 <ng-template #confirmModal let-modal>
     <div class="modal-header bg-danger text-white">
@@ -483,7 +614,7 @@ aria-hidden="true">
         
         <div class="appointment-summary bg-light p-3 rounded mb-3">
             <div><strong>Date:</strong> {{ selectedAppointment?.date | date: 'fullDate' }}</div>
-            <div><strong>Time:</strong> {{ selectedAppointment?.timeSlot | timeFormat }}</div>
+            <div><strong>Time:</strong> {{ selectedAppointment?.timeSlot?? "" | timeFormat }}</div>
             <div *ngIf="role === 'patient'"><strong>Doctor:</strong> {{ selectedAppointment?.doctorName }}</div>
             <div *ngIf="role === 'doctor'"><strong>Patient:</strong> {{ selectedAppointment?.patientName }}</div>
             <div><strong>Department:</strong> {{ selectedAppointment?.departmentName }}</div>

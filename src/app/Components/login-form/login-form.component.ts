@@ -52,7 +52,6 @@ export class LoginFormComponent {
     this.authService.login(loginData).subscribe({
       next: (response) => {
         this.authService.setAuthToken(response.token);
-        localStorage.setItem('role', response.role);
         this.authService.setAuthenticated(true);
         
         const redirectUrl = localStorage.getItem('redirectUrl') || '/profile';

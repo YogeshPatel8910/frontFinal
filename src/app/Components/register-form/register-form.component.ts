@@ -162,7 +162,7 @@ export class RegisterFormComponent implements OnInit {
   constructor(private fb: FormBuilder, private apiService:ApiService ,private authService: AuthenticationService, private router: Router) {}
 
   ngOnInit() {
-    this.role = localStorage.getItem('role') || '';
+    this.role = localStorage.getItem('userRole') || '';
     this.initForm();
 
   }

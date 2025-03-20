@@ -99,7 +99,7 @@ export class AppointmentFormComponent implements OnInit {
 
   ngOnInit() {
     // Get role from localStorage
-    this.userRole = localStorage.getItem('role') || 'patient'; // Default to 'patient' if not found
+    this.userRole = localStorage.getItem('userRole') || 'patient'; // Default to 'patient' if not found
 
     this.initializeForm();
 
@@ -383,7 +383,9 @@ export class AppointmentFormComponent implements OnInit {
 
     // Get the selected time slot value, not label
     const timeSlotValue = this.getTimeSlotValue(this.appointmentForm.value.timeSlot);
-
+    if (this.appointmentForm.value.date && typeof this.appointmentForm.value.date === 'object') {
+      this.appointmentForm.value.date = `${this.appointmentForm.value.date.year}-${('0' + this.appointmentForm.value.date.month).slice(-2)}-${('0' + this.appointmentForm.value.date.day).slice(-2)}`;
+    }
     const updatedData = {
       id: this.appointmentData.id,
       date: this.appointmentForm.value.date,

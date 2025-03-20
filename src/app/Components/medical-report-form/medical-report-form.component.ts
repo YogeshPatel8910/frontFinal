@@ -5,9 +5,6 @@ import { ToastrService } from 'ngx-toastr';
 
 export interface MedicalReport {
   id?: number;
-  patientName: string;
-  doctorName: string;
-  appointmentId: number;
   symptom: string;
   diagnosis: string;
   notes: string;
@@ -29,11 +26,14 @@ export interface Prescription {
 })
 export class MedicalReportFormComponent implements OnInit {
   @Input() appointmentData: any;
+  @Input() reportData: MedicalReport | null = null;
   @Output() closeForm = new EventEmitter<void>();
+  @Output() formSubmitted = new EventEmitter<MedicalReport>();
   
   reportForm!: FormGroup;
   submitted = false;
   loading = false;
+  isEditMode = false;
 
   constructor(
     private fb: FormBuilder,
@@ -43,7 +43,46 @@ export class MedicalReportFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    this.populateFormFromAppointment();
+    this.checkEditMode();
+  }
+
+  checkEditMode(): void {
+    this.isEditMode = !!this.reportData?.id;
+    
+    if (this.isEditMode && this.reportData) {
+      // We're in edit mode, populate form with existing report data
+      this.reportForm.patchValue({
+        id: this.reportData.id,
+        patientName: this.appointmentData.patientName,
+        doctorName: this.appointmentData.doctorName,
+        appointmentId: this.appointmentData.appointmentId,
+        symptom: this.reportData.symptom,
+        diagnosis: this.reportData.diagnosis,
+        notes: this.reportData.notes || ''
+      });
+      
+      // Clear default prescription and add existing ones
+      this.prescriptions.clear();
+      if (this.reportData.prescriptions && this.reportData.prescriptions.length > 0) {
+        this.reportData.prescriptions.forEach(prescription => {
+          this.prescriptions.push(this.fb.group({
+            id: [prescription.id],
+            name: [prescription.name, [Validators.required, Validators.minLength(3)]],
+            dosage: [prescription.dosage, [Validators.required]],
+            duration: [prescription.duration, [Validators.required]],
+            instructions: [prescription.instructions, [Validators.required, Validators.minLength(5)]]
+          }));
+        });
+      } else {
+        this.addPrescription();
+      }
+    } else if (this.appointmentData) {
+      // New report with appointment data
+      this.populateFormFromAppointment();
+    } else {
+      // Completely new report
+      this.addPrescription();
+    }
   }
 
   populateFormFromAppointment(): void {
@@ -65,7 +104,7 @@ export class MedicalReportFormComponent implements OnInit {
       symptom: ['', [Validators.required, Validators.minLength(10)]],
       diagnosis: ['', [Validators.required, Validators.minLength(10)]],
       notes: [''],
-      prescriptions: this.fb.array([this.createPrescriptionFormGroup()])
+      prescriptions: this.fb.array([])
     });
   }
 
@@ -102,20 +141,32 @@ export class MedicalReportFormComponent implements OnInit {
 
     if (this.reportForm.invalid) {
       this.toastr.error('Please correct the errors before submitting the form', 'Validation Error');
+      
+      // Find first invalid control and focus it
+      const firstInvalidControl = document.querySelector('.is-invalid');
+      if (firstInvalidControl) {
+        (firstInvalidControl as HTMLElement).focus();
+      }
+      
       return;
     }
 
     this.loading = true;
-    console.log(this.reportForm.value);
-    
     const medicalReport: MedicalReport = this.reportForm.value;
+    
+    const apiCall = this.isEditMode 
+      ? this.apiService.saveMedicalReport(this.reportForm.value['appointmentId'], medicalReport)
+      : this.apiService.saveMedicalReport(this.reportForm.value['appointmentId'], medicalReport);
 
-    this.apiService.saveMedicalReport(medicalReport.appointmentId,medicalReport).subscribe({
+    apiCall.subscribe({
       next: (response: any) => {
         this.loading = false;
-        console.log(response);
-        
-        this.toastr.success('Medical report has been saved successfully', 'Success');
+        const successMsg = this.isEditMode 
+          ? 'Medical report has been updated successfully'
+          : 'Medical report has been saved successfully';
+          
+        this.toastr.success(successMsg, 'Success');
+        this.formSubmitted.emit(response);
         this.closeForm.emit();
       },
       error: (error: any) => {
@@ -129,14 +180,36 @@ export class MedicalReportFormComponent implements OnInit {
   resetForm(): void {
     this.submitted = false;
     this.reportForm.reset();
-    if (this.appointmentData) {
+    
+    if (this.isEditMode && this.reportData) {
+      this.checkEditMode(); // Re-populate with original data
+    } else if (this.appointmentData) {
       this.populateFormFromAppointment();
+      this.prescriptions.clear();
+      this.addPrescription();
+    } else {
+      this.prescriptions.clear();
+      this.addPrescription();
     }
-    this.prescriptions.clear();
-    this.addPrescription();
   }
 
   cancel(): void {
     this.closeForm.emit();
+  }
+  
+  isFieldRequired(formControlName: string): boolean {
+    const control = this.reportForm.get(formControlName);
+    if (!control) return false;
+    
+    const validator = control.validator && control.validator({} as any);
+    return validator && validator['required'];
+  }
+  
+  isPrescriptionFieldRequired(index: number, controlName: string): boolean {
+    const control = this.prescriptions.at(index).get(controlName);
+    if (!control) return false;
+    
+    const validator = control.validator && control.validator({} as any);
+    return validator && validator['required'];
   }
 }

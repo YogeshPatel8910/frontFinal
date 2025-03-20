@@ -5,6 +5,46 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs/operators';
 
+// Define interfaces for better type safety
+interface Appointment {
+  id: number;
+  patientName: string;
+  doctorName: string;
+  departmentName: string;
+  branchName: string;
+  date: string;
+  timeSlot: string;
+  status: string;
+  reason: string;
+  medicalReport?: MedicalReport;
+}
+
+interface MedicalReport {
+  id?: number;
+  diagnosis: string;
+  treatment: string;
+  symptom:string;
+  prescriptions: Array<Prescription>;
+  notes: string;
+  followUp: string;
+  createdDate: string;
+}
+interface Prescription {
+  id?: number;
+  name: string;
+  dosage: string;
+  duration: string;
+  instructions: string;
+}
+
+interface ApiResponse {
+  data: Appointment[];
+  TotalElements: number;
+  [key: string]: any;
+}
+
+type SortOrder = 'asc' | 'desc';
+
 @Component({
   selector: 'app-appointments',
   templateUrl: './appointments.component.html',
@@ -14,26 +54,31 @@ export class AppointmentsComponent implements OnInit {
   @ViewChild('confirmModal') confirmModal!: TemplateRef<any>;
   @ViewChild('medicalReportModal') medicalReportModal!: TemplateRef<any>;
   
-  isRescheduleMode: boolean = false;
+  // State flags
+  isRescheduleMode = false;
   showForm = false;
-  selectedAppointment: any = null;
-  role: string = '';
-  data: { [key: string]: any } = {};
-  appointments: any[] = [];
-  filteredAppointments: any[] = [];
-  currentPage: number = 1;
-  itemsPerPage: number = 10;
-  totalElements: number = 0;
-  reportForm: boolean = false;
-  isLoading: boolean = true;
-  searchTerm: string = '';
-  statusFilter: string = 'all';
-  sortBy: string = 'date';
-  sortOrder: 'asc' | 'desc' = 'asc';
+  reportForm = false;
+  reportData = false;
+  isLoading = true;
   
-  // For the date filter
-  startDate: string = '';
-  endDate: string = '';
+  // Data properties
+  selectedAppointment: Appointment | null = null;
+  role = '';
+  appointments: Appointment[] = [];
+  filteredAppointments: Appointment[] = [];
+  
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalElements = 0;
+  
+  // Filters
+  searchTerm = '';
+  statusFilter = 'all';
+  startDate = '';
+  endDate = '';
+  sortBy = 'date';
+  sortOrder: SortOrder = 'asc';
 
   constructor(
     private apiService: ApiService,
@@ -42,7 +87,7 @@ export class AppointmentsComponent implements OnInit {
     private toastr: ToastrService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadAppointments();
   }
 
@@ -50,17 +95,12 @@ export class AppointmentsComponent implements OnInit {
     this.isLoading = true;
     this.apiService
       .getAppointment(this.currentPage - 1, this.itemsPerPage)
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
-      )
+      .pipe(finalize(() => this.isLoading = false))
       .subscribe({
-        next: (response: { [key: string]: any }) => {
-          this.role = localStorage.getItem('role') || '';
-          this.appointments = response['data'] || [];
-          this.filteredAppointments = [...this.appointments];
-          this.totalElements = response['TotalElements'];
+        next: (response: ApiResponse) => {
+          this.role = localStorage.getItem('userRole') || '';
+          this.appointments = response.data || [];
+          this.totalElements = response.TotalElements;
           this.applyFilters();
         },
         error: (error: any) => {
@@ -70,7 +110,7 @@ export class AppointmentsComponent implements OnInit {
       });
   }
 
-  getStatusClasses(status: string): string {
+  getStatusClasses(status?: string): string {
     if (!status) return 'bg-secondary text-white border-secondary';
     
     switch (status.toLowerCase()) {
@@ -87,46 +127,66 @@ export class AppointmentsComponent implements OnInit {
     }
   }
 
-  handleCardClick(event: Event, content: any, appointment: any): void {
-    // Get the actual target element that was clicked
-    const target = event.target as HTMLElement;
-    
-    // Check if the click was on or within a button, input, or anchor element
-    const isInteractiveElement = !!target.closest('button') || 
-                                !!target.closest('input') || 
-                                !!target.closest('a') ||
-                                target.tagName.toLowerCase() === 'button' ||
-                                target.tagName.toLowerCase() === 'input' ||
-                                target.tagName.toLowerCase() === 'a';
-    
-    // If the click was not on an interactive element, open the modal
-    if (!isInteractiveElement) {
-      this.openModal(content, appointment);
-    }
+  openModal(content: any, appointment: Appointment): void {
+    this.selectedAppointment = appointment;
+    this.modalService.open(content, { 
+      centered: true, 
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
   }
-  onCancel(event: Event, appointment: any) {
-    // Stop propagation to prevent detail modal from opening
-      event.stopPropagation();
+
+  // Event handlers - all explicitly stop propagation to prevent bubbling issues
+  onCancel(event: Event, appointment: Appointment | null): void {
+    event.stopPropagation();
     this.selectedAppointment = appointment;
     this.modalService.open(this.confirmModal, { centered: true });
   }
-// Add this method to your AppointmentsComponent class
 
-buttonClick(event: Event): void {
-  // This is the key - it stops the event from bubbling up to parent elements
-  event.stopPropagation();
-  event.preventDefault();
+  onReschedule(event: Event, appointment: Appointment | null): void {
+    event.stopPropagation();
+    this.selectedAppointment = appointment;
+    this.isRescheduleMode = true;
+    this.showForm = true;
+  }
   
-  // Optional: console log to verify this method is being called
-  console.log('Button click stopped from propagating');
-}
-  confirmDelete(modal: any) {
+  onViewReport(event: Event, appointment: Appointment | null, modal?: any): void {
+    event.stopPropagation();
+    this.selectedAppointment = appointment;
+    console.log(this.selectedAppointment);
+    
+    this.reportData = true;
+    
+    if (modal) {
+      modal.close();
+    }
+  }
+
+  createMedicalReport(event: Event, appointment: Appointment | null, modal?: any): void {
+    event.stopPropagation();
+    this.selectedAppointment = appointment;
+    
+    if(this.reportData){
+      this.reportData=false;
+    }
+    this.reportForm = true;
+    
+    if (modal) {
+      modal.close();
+    }
+  }
+
+  // Appointment management methods
+  confirmDelete(modal: any): void {
+    if (!this.selectedAppointment) return;
+    
     const loadingToast = this.toastr.info('Cancelling appointment...', '', {
       disableTimeOut: true
     });
     
     this.apiService.deleteAppointment(this.selectedAppointment.id).subscribe({
-      next: (res) => {
+      next: () => {
         this.toastr.clear(loadingToast.toastId);
         this.toastr.success('Appointment cancelled successfully');
         this.loadAppointments();
@@ -140,80 +200,54 @@ buttonClick(event: Event): void {
     });
   }
 
-  onReschedule(event: Event, appointment: any) {
-    // Stop propagation to prevent detail modal from opening
-    event.stopPropagation();
-    event.preventDefault();
-    
-    this.selectedAppointment = appointment;
-    this.isRescheduleMode = true;
-    this.showForm = true;
-  }
-
-  createMedicalReport(event: Event, appointment: any, modal?: any) {
-    // Stop propagation to prevent detail modal from opening
-      event.stopPropagation();
-    
-    this.selectedAppointment = appointment;
-    this.reportForm = true;
-    if (modal) {
-      modal.close(); // Close the detail modal if provided
-    }
-  }
-
-  onPageChange(event: number) {
-    this.currentPage = event;
-    this.loadAppointments();
-  }
-
-  createForm() {
+  createForm(): void {
     this.showForm = true;
     this.isRescheduleMode = false;
     this.selectedAppointment = null;
   }
 
-  toggleForm() {
+  toggleForm(): void {
     this.loadAppointments();
     this.showForm = false;
     this.selectedAppointment = null;
     this.isRescheduleMode = false;
   }
   
-  closeReportForm() {
-    this.reportForm = false;
-    this.loadAppointments(); // Refresh appointments to show updated report status
+  closeReportForm(): void {
+    if(this.reportData){
+      this.reportData = false;
+    }
+    if(this.reportForm){
+      this.reportForm = false;
+      this.loadAppointments();
+    }
   }
   
-  openModal(content: any, appointment: any) {
-    this.selectedAppointment = appointment;
-    this.modalService.open(content, { 
-      centered: true, 
-      size: 'lg',
-      backdrop: 'static',
-      keyboard: false
-    });
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadAppointments();
   }
-  
+
   // Filter functions
-  applyFilters() {
+  applyFilters(): void {
     let filtered = [...this.appointments];
     
     // Apply search filter
     if (this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(appointment => 
-        (appointment.patientName && appointment.patientName.toLowerCase().includes(searchLower)) ||
-        (appointment.doctorName && appointment.doctorName.toLowerCase().includes(searchLower)) ||
-        (appointment.departmentName && appointment.departmentName.toLowerCase().includes(searchLower)) ||
-        (appointment.branchName && appointment.branchName.toLowerCase().includes(searchLower)) ||
-        (appointment.reason && appointment.reason.toLowerCase().includes(searchLower))
+        (appointment.patientName?.toLowerCase().includes(searchLower)) ||
+        (appointment.doctorName?.toLowerCase().includes(searchLower)) ||
+        (appointment.departmentName?.toLowerCase().includes(searchLower)) ||
+        (appointment.branchName?.toLowerCase().includes(searchLower)) ||
+        (appointment.reason?.toLowerCase().includes(searchLower))
       );
     }
     
     // Apply status filter
     if (this.statusFilter !== 'all') {
       filtered = filtered.filter(appointment => 
-        appointment.status && appointment.status.toLowerCase() === this.statusFilter.toLowerCase()
+        appointment.status?.toLowerCase() === this.statusFilter.toLowerCase()
       );
     }
     
@@ -237,8 +271,8 @@ buttonClick(event: Event): void {
         return this.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
       } else if (this.sortBy === 'status') {
         return this.sortOrder === 'asc' 
-          ? a.status.localeCompare(b.status) 
-          : b.status.localeCompare(a.status);
+          ? (a.status || '').localeCompare(b.status || '') 
+          : (b.status || '').localeCompare(a.status || '');
       }
       return 0;
     });
@@ -246,7 +280,7 @@ buttonClick(event: Event): void {
     this.filteredAppointments = filtered;
   }
   
-  resetFilters() {
+  resetFilters(): void {
     this.searchTerm = '';
     this.statusFilter = 'all';
     this.startDate = '';
@@ -257,12 +291,16 @@ buttonClick(event: Event): void {
     this.toastr.info('Filters have been reset');
   }
   
-  toggleSortOrder() {
+  toggleSortOrder(): void {
     this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     this.applyFilters();
   }
   
-  exportAppointments() {
+  calculateLastItemIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.totalElements);
+  }
+  
+  exportAppointments(): void {
     // Create CSV content
     let csvContent = "data:text/csv;charset=utf-8,";
     
@@ -285,21 +323,15 @@ buttonClick(event: Event): void {
       csvContent += row + "\n";
     });
     
-    // Create download link
+    // Create and trigger download
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `appointments_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
-    
-    // Trigger download
     link.click();
     document.body.removeChild(link);
     
     this.toastr.success('Appointments exported successfully');
-  }
-  
-  calculateLastItemIndex(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.totalElements);
   }
 }

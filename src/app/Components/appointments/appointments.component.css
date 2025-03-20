@@ -295,24 +295,7 @@
 .modal-header.bg-secondary {
     background: linear-gradient(135deg, #6c757d, #495057);
 }
-/* Medical report styling */
-.medical-report-content {
-    font-size: 0.9rem;
-}
-
-.medical-report-content h6 {
-    color: #495057;
-    margin-top: 1rem;
-}
-
-.medical-report-content h6:first-child {
-    margin-top: 0;
-}
-
-.medical-report-content p {
-    white-space: pre-line;
-    margin-bottom: 0.5rem;
-}/* Medical Report Styling */
+/* Medical Report Styling */
 .medical-report-section {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
@@ -396,3 +379,64 @@
       -webkit-print-color-adjust: exact;
     }
   }
+  .medical-report-section {
+    border-bottom: 1px solid #eee;
+}
+
+.section-header {
+    padding: 0.75rem 1.25rem;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.section-content {
+    padding: 1rem 1.25rem;
+    white-space: pre-line;
+}
+
+.prescription-text {
+    font-family: monospace;
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0;
+}
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+}
+
+.avatar-circle {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 24px;
+}
+
+/* Improve scrollbar appearance */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background-color: rgba(0,0,0,0.05);
+}

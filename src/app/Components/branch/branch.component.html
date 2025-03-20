@@ -59,7 +59,7 @@
                 </ng-template>
               </td>
               <td class="text-center">
-                <button class="btn btn-sm btn-outline-primary me-2">
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(editBranchModal, branch)">
                   <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" (click)="openDeleteConfirmation(deleteConfirmationModal, branch.id)">
@@ -146,7 +146,7 @@
       </div>
       <!-- Multiple Department Selection -->
       <div class="mb-3">
-        <label for="branchName" class="form-label">Department</label>
+        <label for="branchDepartmentname" class="form-label">Department</label>
         <ng-select
           [items]="departments"
           bindLabel="name"
@@ -161,6 +161,77 @@
   <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Cancel</button>
     <button type="button" class="btn btn-primary" [disabled]="branchForm.invalid" (click)="submitBranch()">Save</button>
+  </div>
+</ng-template>
+
+<!-- Edit Branch Modal -->
+<ng-template #editBranchModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Create Branch</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="branchForm">
+      <!-- Branch Name Input -->
+      <div class="mb-3">
+        <label for="branchName" class="form-label">Branch Name*</label>
+        <input 
+          id="branchName" 
+          formControlName="name" 
+          class="form-control" 
+          type="text" 
+          [class.is-invalid]="isInvalid('name')" />
+        <div *ngIf="isInvalid('name')" class="invalid-feedback">
+          <span *ngIf="branchForm.get('name')?.errors?.['required']">Name is required</span>
+          <span *ngIf="branchForm.get('name')?.errors?.['minlength']">Name must be at least 2 characters</span>
+        </div>
+      </div>
+      
+      <!-- Branch Address Input -->
+      <div class="mb-3">
+        <label for="branchAddress" class="form-label">Address*</label>
+        <input 
+          id="branchAddress" 
+          formControlName="address" 
+          class="form-control" 
+          type="text" 
+          [class.is-invalid]="isInvalid('address')" />
+        <div *ngIf="isInvalid('address')" class="invalid-feedback">
+          Address is required
+        </div>
+      </div>
+      
+      <!-- Branch Phone Input -->
+      <div class="mb-3">
+        <label for="branchPhone" class="form-label">Phone*</label>
+        <input 
+          id="branchPhone" 
+          formControlName="phone" 
+          class="form-control" 
+          type="text" 
+          [class.is-invalid]="isInvalid('phone')" />
+        <div *ngIf="isInvalid('phone')" class="invalid-feedback">
+          <span *ngIf="branchForm.get('phone')?.errors?.['required']">Phone is required</span>
+          <span *ngIf="branchForm.get('phone')?.errors?.['pattern']">Please enter a valid phone number</span>
+        </div>
+      </div>
+      <!-- Multiple Department Selection -->
+      <div class="mb-3">
+        <label for="branchDepartmentName" class="form-label">Department</label>
+        <ng-select
+          [items]="departments"
+          bindLabel="name"
+          bindValue="name"
+          [multiple]="true"
+          placeholder="Select Departments"
+          formControlName="departmentName">
+        </ng-select>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="branchForm.invalid" (click)="updateBranch()">Save</button>
   </div>
 </ng-template>
 

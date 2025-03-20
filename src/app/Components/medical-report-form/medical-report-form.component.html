@@ -1,11 +1,14 @@
 <div class="container-fluid m-0 p-0">
-  <div class="card ">
+  <div class="card">
+   
     
     <div class="card-body">
       <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
         <div class="row mb-4">
           <div class="col-md-4 mb-3">
-            <label for="patientName" class="form-label fw-bold">Patient Name</label>
+            <label for="patientName" class="form-label fw-bold">
+              Patient Name <span class="text-danger" *ngIf="isFieldRequired('patientName')">*</span>
+            </label>
             <input
               type="text"
               id="patientName"
@@ -17,11 +20,14 @@
             <div *ngIf="submitted && f['patientName'].errors" class="invalid-feedback">
               <div *ngIf="f['patientName'].errors['required']">Patient name is required</div>
               <div *ngIf="f['patientName'].errors['minlength']">Name must be at least 3 characters long</div>
+              <div *ngIf="f['patientName'].errors['maxlength']">Name cannot exceed 100 characters</div>
             </div>
           </div>
           
           <div class="col-md-4 mb-3">
-            <label for="doctorName" class="form-label fw-bold">Doctor Name</label>
+            <label for="doctorName" class="form-label fw-bold">
+              Doctor Name <span class="text-danger" *ngIf="isFieldRequired('doctorName')">*</span>
+            </label>
             <input
               type="text"
               id="doctorName"
@@ -33,11 +39,14 @@
             <div *ngIf="submitted && f['doctorName'].errors" class="invalid-feedback">
               <div *ngIf="f['doctorName'].errors['required']">Doctor name is required</div>
               <div *ngIf="f['doctorName'].errors['minlength']">Name must be at least 3 characters long</div>
+              <div *ngIf="f['doctorName'].errors['maxlength']">Name cannot exceed 100 characters</div>
             </div>
           </div>
           
           <div class="col-md-4 mb-3">
-            <label for="appointmentId" class="form-label fw-bold">Appointment ID</label>
+            <label for="appointmentId" class="form-label fw-bold">
+              Appointment ID <span class="text-danger" *ngIf="isFieldRequired('appointmentId')">*</span>
+            </label>
             <input
               type="text"
               id="appointmentId"
@@ -45,6 +54,7 @@
               class="form-control form-control-lg"
               placeholder="Enter appointment ID number"
               [ngClass]="{'is-invalid': submitted && f['appointmentId'].errors}"
+              [readonly]="isEditMode"
             >
             <div *ngIf="submitted && f['appointmentId'].errors" class="invalid-feedback">
               <div *ngIf="f['appointmentId'].errors['required']">Appointment ID is required</div>
@@ -54,7 +64,9 @@
         </div>
         
         <div class="mb-4">
-          <label for="symptom" class="form-label fw-bold">Symptoms</label>
+          <label for="symptom" class="form-label fw-bold">
+            Symptoms <span class="text-danger" *ngIf="isFieldRequired('symptom')">*</span>
+          </label>
           <textarea
             id="symptom"
             formControlName="symptom"
@@ -70,7 +82,9 @@
         </div>
         
         <div class="mb-4">
-          <label for="diagnosis" class="form-label fw-bold">Diagnosis</label>
+          <label for="diagnosis" class="form-label fw-bold">
+            Diagnosis <span class="text-danger" *ngIf="isFieldRequired('diagnosis')">*</span>
+          </label>
           <textarea
             id="diagnosis"
             formControlName="diagnosis"
@@ -100,9 +114,6 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="card-title mb-0"><i class="bi bi-capsule me-2"></i>Prescriptions</h3>
-              <button type="button" class="btn btn-primary" (click)="addPrescription()">
-                <i class="bi bi-plus-circle me-1"></i> Add Prescription
-              </button>
             </div>
             
             <div formArrayName="prescriptions">
@@ -116,7 +127,9 @@
                 
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label [for]="'medicationName' + i" class="form-label fw-bold">Medication Name</label>
+                    <label [for]="'medicationName' + i" class="form-label fw-bold">
+                      Medication Name <span class="text-danger" *ngIf="isPrescriptionFieldRequired(i, 'name')">*</span>
+                    </label>
                     <input
                       [id]="'medicationName' + i"
                       type="text"
@@ -126,13 +139,15 @@
                       [ngClass]="{'is-invalid': submitted && prescription.get('name')?.errors}"
                     >
                     <div *ngIf="submitted && prescription.get('name')?.errors" class="invalid-feedback">
-                      <!-- <div *ngIf="prescription.get('name')?.errors['required']">Medication name is required</div> -->
-                      <!-- <div *ngIf="prescription.get('name')?.errors['minlength']">Name must be at least 3 characters</div> -->
+                      <div *ngIf="prescription.get('name')?.errors?.['required']">Medication name is required</div>
+                      <div *ngIf="prescription.get('name')?.errors?.['minlength']">Name must be at least 3 characters</div>
                     </div>
                   </div>
                   
                   <div class="col-md-6 mb-3">
-                    <label [for]="'dosage' + i" class="form-label fw-bold">Dosage</label>
+                    <label [for]="'dosage' + i" class="form-label fw-bold">
+                      Dosage <span class="text-danger" *ngIf="isPrescriptionFieldRequired(i, 'dosage')">*</span>
+                    </label>
                     <input
                       [id]="'dosage' + i"
                       type="text"
@@ -141,13 +156,15 @@
                       placeholder="E.g., 500mg twice daily"
                       [ngClass]="{'is-invalid': submitted && prescription.get('dosage')?.errors}"
                     >
-                    <div *ngIf="submitted && prescription.get('dosage')?.errors?.['required']" class="invalid-feedback">
-                      Dosage is required
+                    <div *ngIf="submitted && prescription.get('dosage')?.errors" class="invalid-feedback">
+                      <div *ngIf="prescription.get('dosage')?.errors?.['required']">Dosage is required</div>
                     </div>
                   </div>
                   
                   <div class="col-md-6 mb-3">
-                    <label [for]="'duration' + i" class="form-label fw-bold">Duration</label>
+                    <label [for]="'duration' + i" class="form-label fw-bold">
+                      Duration <span class="text-danger" *ngIf="isPrescriptionFieldRequired(i, 'duration')">*</span>
+                    </label>
                     <input
                       [id]="'duration' + i"
                       type="text"
@@ -156,13 +173,15 @@
                       placeholder="E.g., 7 days, 2 weeks"
                       [ngClass]="{'is-invalid': submitted && prescription.get('duration')?.errors}"
                     >
-                    <div *ngIf="submitted && prescription.get('duration')?.errors?.['required']" class="invalid-feedback">
-                      Duration is required
+                    <div *ngIf="submitted && prescription.get('duration')?.errors" class="invalid-feedback">
+                      <div *ngIf="prescription.get('duration')?.errors?.['required']">Duration is required</div>
                     </div>
                   </div>
                   
                   <div class="col-md-6 mb-3">
-                    <label [for]="'instructions' + i" class="form-label fw-bold">Instructions</label>
+                    <label [for]="'instructions' + i" class="form-label fw-bold">
+                      Instructions <span class="text-danger" *ngIf="isPrescriptionFieldRequired(i, 'instructions')">*</span>
+                    </label>
                     <textarea
                       [id]="'instructions' + i"
                       formControlName="instructions"
@@ -172,24 +191,32 @@
                       [ngClass]="{'is-invalid': submitted && prescription.get('instructions')?.errors}"
                     ></textarea>
                     <div *ngIf="submitted && prescription.get('instructions')?.errors" class="invalid-feedback">
-                      <!-- <div *ngIf="prescription.get('instructions')?.errors['required']">Instructions are required</div> -->
-                      <!-- <div *ngIf="prescription.get('instructions')?.errors['minlength']">Provide at least 5 characters</div> -->
+                      <div *ngIf="prescription.get('instructions')?.errors?.['required']">Instructions are required</div>
+                      <div *ngIf="prescription.get('instructions')?.errors?.['minlength']">Provide at least 5 characters</div>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="d-flex justify-content-end align-items-center mb-3">
+                <button type="button" class="btn btn-primary " (click)="addPrescription()">
+                  <i class="bi bi-plus-circle me-1"></i> Add Prescription
+                </button>
               </div>
             </div>
           </div>
         </div>
         
         <div class="d-flex justify-content-end mt-4">
-          <button type="button" class="btn btn-outline-secondary me-2" (click)="resetForm()">
+          <button type="button" class="btn btn-outline-secondary me-2" (click)="cancel()">
             <i class="bi bi-x-circle me-1"></i> Cancel
           </button>
+          <button type="button" class="btn btn-outline-warning me-2" (click)="resetForm()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+          </button>
           <button type="submit" class="btn btn-success btn-lg" [disabled]="loading">
-            <i class="bi bi-save me-1"></i> 
-            <span *ngIf="!loading">Save Report</span>
-            <span *ngIf="loading">Saving... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></span>
+            <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-save'"></i> 
+            <span *ngIf="!loading">{{ isEditMode ? 'Update Report' : 'Save Report' }}</span>
+            <span *ngIf="loading">{{ isEditMode ? 'Updating...' : 'Saving...' }} <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></span>
           </button>
         </div>
       </form>
